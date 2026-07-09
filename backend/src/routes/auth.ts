@@ -1,75 +1,97 @@
 import { Router } from 'express';
+import { clearSessionUser, getSessionUser } from '../auth/session.js';
 import { config } from '../config.js';
-import { clearSessionAuth, getSessionAuth } from '../auth/session.js';
-import { requestAccessToken } from '../auth/tokenService.js';
+import { registerContactWithAfnic } from '../services/contactService.js';
+import { hashPassword, verifyPassword } from '../users/password.js';
+import { createUser, findUserByEmail, toPublicProfile } from '../users/store.js';
+import { validateRegisterInput } from '../users/validation.js';
 
 export const authRouter = Router();
 
 authRouter.get('/status', (req, res) => {
-  const auth = getSessionAuth(req);
+  const user = getSessionUser(req);
 
   res.json({
-    authenticated: Boolean(auth),
-    username: auth?.username,
-    expiresAt: auth?.expiresAt,
+    authenticated: Boolean(user),
+    email: user?.email,
+    contactName: user?.contactName,
+    afnicClientId: user?.afnicClientId,
     mockAfnic: config.mockAfnic,
     environment: config.afnicEnvironment,
     environmentLabel: config.afnicEnvironmentLabel,
-    keycloakTokenUrl: config.keycloakTokenUrl,
   });
+});
+
+authRouter.post('/register', async (req, res) => {
+  try {
+    const input = validateRegisterInput(req.body);
+    const existing = await findUserByEmail(input.email);
+
+    if (existing) {
+      res.status(409).json({ error: 'Un compte existe déjà avec cette adresse e-mail' });
+      return;
+    }
+
+    const afnicClientId = await registerContactWithAfnic(input);
+    const passwordHash = hashPassword(input.password);
+    const user = await createUser(input, passwordHash, afnicClientId);
+
+    req.session.user = {
+      userId: user.id,
+      email: user.email,
+      afnicClientId: user.afnicClientId,
+      contactName: user.contactName,
+    };
+
+    res.status(201).json({
+      authenticated: true,
+      user: toPublicProfile(user),
+      mockAfnic: config.mockAfnic,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Échec de l’inscription';
+    const status = /existe déjà/i.test(message) ? 409 : 400;
+    res.status(status).json({ error: message });
+  }
 });
 
 authRouter.post('/login', async (req, res) => {
   try {
-    const username = String(req.body?.username ?? '').trim();
+    const email = String(req.body?.email ?? '').trim().toLowerCase();
     const password = String(req.body?.password ?? '');
 
-    if (!username || !password) {
-      res.status(400).json({ error: "L'identifiant et le mot de passe sont obligatoires" });
+    if (!email || !password) {
+      res.status(400).json({ error: "L'e-mail et le mot de passe sont obligatoires" });
       return;
     }
 
-    if (config.mockAfnic) {
-      req.session.auth = {
-        username,
-        accessToken: 'mock-token',
-        expiresAt: Date.now() + 8 * 60 * 60 * 1000,
-      };
+    const user = await findUserByEmail(email);
 
-      res.json({
-        authenticated: true,
-        username,
-        expiresAt: req.session.auth.expiresAt,
-        mockAfnic: true,
-      });
+    if (!user || !verifyPassword(password, user.passwordHash)) {
+      res.status(401).json({ error: 'E-mail ou mot de passe incorrect' });
       return;
     }
 
-    const token = await requestAccessToken({
-      username,
-      password,
-    });
-
-    req.session.auth = {
-      username,
-      accessToken: token.accessToken,
-      expiresAt: token.expiresAt - 30_000,
+    req.session.user = {
+      userId: user.id,
+      email: user.email,
+      afnicClientId: user.afnicClientId,
+      contactName: user.contactName,
     };
 
     res.json({
       authenticated: true,
-      username,
-      expiresAt: req.session.auth.expiresAt,
+      user: toPublicProfile(user),
       mockAfnic: config.mockAfnic,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Échec de la connexion';
-    res.status(401).json({ error: message });
+    res.status(500).json({ error: message });
   }
 });
 
 authRouter.post('/logout', (req, res) => {
-  clearSessionAuth(req);
+  clearSessionUser(req);
 
   req.session.destroy((error) => {
     if (error) {

@@ -29,19 +29,11 @@ export interface HealthResponse {
   extranetBaseUrl: string;
 }
 
-export interface AuthStatusResponse {
-  authenticated: boolean;
-  username?: string;
-  expiresAt?: number;
-  mockAfnic: boolean;
-  environment?: 'sandbox' | 'production';
-  environmentLabel?: string;
-  keycloakTokenUrl?: string;
-}
-
-export interface LoginResponse {
-  authenticated: boolean;
-  username?: string;
-  expiresAt?: number;
-  mockAfnic: boolean;
-}
+export type {
+  AuthResponse,
+  AuthStatusResponse,
+  ContactKind,
+  MoralLegalStatus,
+  RegisterRequest,
+  UserProfile,
+} from './types/auth';

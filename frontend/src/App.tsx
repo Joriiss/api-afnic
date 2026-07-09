@@ -6,9 +6,11 @@ import {
   fetchHealth,
   login,
   logout,
+  register,
 } from './api/client';
 import { CsvUpload } from './components/CsvUpload';
 import { LoginForm } from './components/LoginForm';
+import { RegisterForm } from './components/RegisterForm';
 import { ResultsTable } from './components/ResultsTable';
 import { SearchInput } from './components/SearchInput';
 import { Win98DesktopIcons } from './components/Win98DesktopIcons';
@@ -17,7 +19,7 @@ import { Win98Marquee } from './components/Win98Marquee';
 import { Win98Taskbar } from './components/Win98Taskbar';
 import { Win98Window } from './components/Win98Window';
 import { Win98EasterEggsProvider } from './context/Win98EasterEggsContext';
-import type { AuthStatusResponse, DomainCheckMeta, DomainCheckResult } from './types';
+import type { AuthStatusResponse, DomainCheckMeta, DomainCheckResult, RegisterRequest } from './types';
 import { downloadCsv, exportResultsToCsv } from './utils/results';
 import './App.css';
 
@@ -36,12 +38,14 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
   const [loginLoading, setLoginLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
+  const [authView, setAuthView] = useState<'login' | 'register'>('register');
   const [error, setError] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [registerError, setRegisterError] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<AuthStatusResponse | null>(null);
   const [mockMode, setMockMode] = useState(false);
   const [environmentLabel, setEnvironmentLabel] = useState('Sandbox');
-  const [tokenUrl, setTokenUrl] = useState('');
   const [extranetBaseUrl, setExtranetBaseUrl] = useState('');
 
   useEffect(() => {
@@ -50,7 +54,6 @@ export default function App() {
         const [health, status] = await Promise.all([fetchHealth(), fetchAuthStatus()]);
         setMockMode(health.mockAfnic);
         setEnvironmentLabel(health.environmentLabel);
-        setTokenUrl(health.keycloakTokenUrl);
         setExtranetBaseUrl(health.extranetBaseUrl);
         setAuthStatus(status);
       } catch {
@@ -65,20 +68,49 @@ export default function App() {
     void loadInitialState();
   }, []);
 
-  const isAuthenticated = Boolean(mockMode || authStatus?.authenticated);
+  const isAuthenticated = Boolean(authStatus?.authenticated);
 
-  async function handleLogin(username: string, password: string) {
+  async function handleLogin(email: string, password: string) {
     setLoginLoading(true);
     setLoginError(null);
 
     try {
-      const status = await login(username, password);
-      setAuthStatus(status);
+      const response = await login(email, password);
+      setAuthStatus({
+        authenticated: true,
+        email: response.user?.email,
+        contactName: response.user?.contactName,
+        afnicClientId: response.user?.afnicClientId,
+        mockAfnic: response.mockAfnic,
+        environmentLabel,
+      });
       setError(null);
     } catch (err) {
       setLoginError(err instanceof Error ? err.message : 'Échec de la connexion');
     } finally {
       setLoginLoading(false);
+    }
+  }
+
+  async function handleRegister(payload: RegisterRequest) {
+    setRegisterLoading(true);
+    setRegisterError(null);
+
+    try {
+      const response = await register(payload);
+      setAuthStatus({
+        authenticated: true,
+        email: response.user?.email,
+        contactName: response.user?.contactName,
+        afnicClientId: response.user?.afnicClientId,
+        mockAfnic: response.mockAfnic,
+        environmentLabel,
+      });
+      setError(null);
+    } catch (err) {
+      setRegisterError(err instanceof Error ? err.message : 'Échec de l’inscription');
+    } finally {
+      setRegisterLoading(false);
     }
   }
 
@@ -106,9 +138,9 @@ export default function App() {
       const message = err instanceof Error ? err.message : 'Échec de la vérification des domaines';
       setError(message);
 
-      if (/auth/i.test(message)) {
+      if (/connexion|auth/i.test(message)) {
         setAuthStatus((current) =>
-          current ? { ...current, authenticated: false, username: undefined } : current,
+          current ? { ...current, authenticated: false, email: undefined, contactName: undefined } : current,
         );
       }
     } finally {
@@ -180,21 +212,36 @@ export default function App() {
                   <Win98Marquee text="Bienvenue sur AFNIC Check 98 — Le meilleur logiciel de vérification de domaines .fr de 1998 !!!" />
                   <h1 className="win98-hero-title">Vérification de disponibilité</h1>
                   <p className="win98-hero-copy">
-                    Connectez-vous avec vos identifiants AFNIC pour vérifier la disponibilité des domaines
-                    `.fr`.
+                    Créez un compte client pour vérifier la disponibilité des domaines `.fr`. Vos informations
+                    sont enregistrées comme contact AFNIC.
                   </p>
                   <p className="win98-best-viewed">Meilleure résolution : 800×600 — 256 couleurs</p>
                 </Win98Window>
               </header>
 
-              <LoginForm
-                onLogin={handleLogin}
-                loading={loginLoading}
-                error={loginError}
-                environmentLabel={environmentLabel}
-                tokenUrl={tokenUrl}
-                mockMode={mockMode}
-              />
+              {authView === 'login' ? (
+                <LoginForm
+                  onLogin={handleLogin}
+                  onSwitchToRegister={() => {
+                    setAuthView('register');
+                    setLoginError(null);
+                  }}
+                  loading={loginLoading}
+                  error={loginError}
+                  mockMode={mockMode}
+                />
+              ) : (
+                <RegisterForm
+                  onRegister={handleRegister}
+                  onSwitchToLogin={() => {
+                    setAuthView('login');
+                    setRegisterError(null);
+                  }}
+                  loading={registerLoading}
+                  error={registerError}
+                  mockMode={mockMode}
+                />
+              )}
             </div>
           </div>
 
@@ -223,18 +270,16 @@ export default function App() {
                     </span>
                   )}
                   {mockMode && <span className="win98-status-badge win98-status-badge-warn">Mode simulation</span>}
-                  {!mockMode && (
-                    <button className="win98-button" type="button" onClick={() => void handleLogout()}>
-                      Se déconnecter
-                    </button>
-                  )}
+                  <button className="win98-button" type="button" onClick={() => void handleLogout()}>
+                    Se déconnecter
+                  </button>
                 </div>
 
                 <Win98Marquee
                   text={
-                    authStatus?.username
-                      ? `Utilisateur connecté : ${authStatus.username} — Bonne vérification de domaines !!!`
-                      : 'Mode simulation actif — Vérification de domaines .fr'
+                    authStatus?.email
+                      ? `Client connecté : ${authStatus.contactName ?? authStatus.email} (${authStatus.afnicClientId ?? 'contact'})`
+                      : 'Vérification de domaines .fr'
                   }
                 />
                 <h1 className="win98-hero-title">Vérification de disponibilité</h1>
@@ -285,7 +330,7 @@ export default function App() {
       </div>
 
       <Win98Taskbar
-        username={authStatus?.username}
+        username={authStatus?.contactName ?? authStatus?.email}
         environmentLabel={environmentLabel}
         mockMode={mockMode}
         onLogout={() => void handleLogout()}

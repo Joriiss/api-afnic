@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { getSessionAuth, requireAuth } from '../auth/session.js';
+import { requireAuth } from '../auth/session.js';
 import { runDomainChecks } from '../services/domainCheckService.js';
 import { normalizeDomainNames } from '../utils/normalizeDomains.js';
 import { parseDomainsFromCsv } from '../utils/parseCsv.js';
@@ -24,8 +24,7 @@ domainsRouter.post('/check', async (req, res) => {
     }
 
     const normalized = normalizeDomainNames(names.map(String));
-    const accessToken = getSessionAuth(req)?.accessToken;
-    const response = await runDomainChecks(normalized.valid, normalized.invalid, accessToken);
+    const response = await runDomainChecks(normalized.valid, normalized.invalid);
     res.json(response);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Échec de la vérification des domaines';
@@ -46,8 +45,7 @@ domainsRouter.post('/check/csv', upload.single('file'), async (req, res) => {
 
     const content = req.file.buffer.toString('utf-8');
     const parsed = parseDomainsFromCsv(content);
-    const accessToken = getSessionAuth(req)?.accessToken;
-    const response = await runDomainChecks(parsed.domains, parsed.invalid, accessToken);
+    const response = await runDomainChecks(parsed.domains, parsed.invalid);
 
     res.json({
       ...response,

@@ -1,8 +1,9 @@
 import type {
+  AuthResponse,
   AuthStatusResponse,
   DomainCheckResponse,
   HealthResponse,
-  LoginResponse,
+  RegisterRequest,
 } from '../types';
 
 const fetchOptions: RequestInit = {
@@ -30,15 +31,26 @@ export async function fetchAuthStatus(): Promise<AuthStatusResponse> {
   return parseJson<AuthStatusResponse>(response);
 }
 
-export async function login(username: string, password: string): Promise<LoginResponse> {
+export async function register(payload: RegisterRequest): Promise<AuthResponse> {
+  const response = await fetch('/api/auth/register', {
+    ...fetchOptions,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJson<AuthResponse>(response);
+}
+
+export async function login(email: string, password: string): Promise<AuthResponse> {
   const response = await fetch('/api/auth/login', {
     ...fetchOptions,
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   });
 
-  return parseJson<LoginResponse>(response);
+  return parseJson<AuthResponse>(response);
 }
 
 export async function logout(): Promise<void> {

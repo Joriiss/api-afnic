@@ -432,10 +432,15 @@ tbody tr:hover .win98-button-compact {
 
 /* ── Panels / forms ── */
 
-.login-panel {
+.login-panel,
+.register-panel {
   width: 100%;
   max-width: 560px;
   align-self: center;
+}
+
+.register-panel {
+  max-width: 720px;
 }
 
 .panel-header h2 {
@@ -478,9 +483,20 @@ tbody tr:hover .win98-button-compact {
   font-weight: bold;
 }
 
-.login-form {
+.login-form,
+.register-form {
   display: grid;
   gap: 8px;
+}
+
+.register-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.field-span-2 {
+  grid-column: 1 / -1;
 }
 
 .field {
@@ -490,12 +506,17 @@ tbody tr:hover .win98-button-compact {
   gap: 8px;
 }
 
+.register-grid .field {
+  grid-template-columns: 120px 1fr;
+}
+
 .field span {
   font-size: 11px;
   text-align: right;
 }
 
 .field input,
+.field select,
 .domain-input {
   width: 100%;
   padding: 3px 4px;
