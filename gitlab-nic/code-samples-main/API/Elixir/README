@@ -1,0 +1,13 @@
+Sample code for the .fr API. In this directory, the Elixir code. 
+
+This code requires a file ${HOME}/.afnic-api with two lines, your
+login and your password.
+
+Before running any program: load the dependencies:
+
+mix deps.get
+
+To run a program (here, the DAS):
+
+mix run das.exs foobar.fr example.fr
+

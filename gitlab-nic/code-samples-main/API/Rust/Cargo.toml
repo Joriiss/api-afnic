@@ -1,0 +1,61 @@
+[package]
+name = "afnic"
+version = "0.7.0"
+edition = "2021"
+default-run = "list-domains"
+
+[dependencies]
+clap = { version = "4", features = [ "derive"] }
+home = "0.5.4"
+reqwest = { version = "0.11.11", features = ["json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+
+[[bin]]
+name="create-contact"
+
+[[bin]]
+name="create-domain"
+
+[[bin]]
+name="create-host"
+
+[[bin]]
+name="das"
+
+[[bin]]
+name="info-authorization-code-requests"
+
+[[bin]]
+name="info-domain"
+
+[[bin]]
+name="list-articles"
+
+[[bin]]
+name="list-authorization-code-requests"
+
+[[bin]]
+name="list-contacts"
+
+[[bin]]
+name="list-domains"
+
+[[bin]]
+name="list-domains-associated-with-host"
+
+[[bin]]
+name="list-hosts"
+
+[[bin]]
+name="renew-domain"
+
+[[bin]]
+name="request-authorization-code"
+
+[[bin]]
+name="update-domain"
+
+[[bin]]
+name="update-host"

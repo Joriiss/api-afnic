@@ -1,0 +1,3 @@
+To build a program (but it is better to use the Makefile):
+
+go build -o PROGRAM PROGRAM.go afnic.go
