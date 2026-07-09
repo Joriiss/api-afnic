@@ -54,6 +54,7 @@ export function Win98StartMenu({ open, onClose, onLogout, isAuthenticated, ancho
 
   const shutdownDialog = showShutdown ? (
     <Win98Window
+      floating
       title="Arrêter Windows"
       icon="warning"
       className="win98-start-dialog win98-shutdown-dialog"

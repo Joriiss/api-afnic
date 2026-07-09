@@ -1,5 +1,5 @@
 import type { DomainCheckMeta, DomainCheckResult } from '../types';
-import { formatAvailability, humanizeReason } from '../utils/results';
+import { formatAvailability, getDomainRegisterUrl, humanizeReason } from '../utils/results';
 import { Win98Icon } from './Win98Icon';
 import { Win98Window } from './Win98Window';
 
@@ -7,11 +7,19 @@ interface ResultsTableProps {
   results: DomainCheckResult[];
   meta?: DomainCheckMeta;
   loading?: boolean;
+  extranetBaseUrl?: string;
   onExport: () => void;
   onClear: () => void;
 }
 
-export function ResultsTable({ results, meta, loading, onExport, onClear }: ResultsTableProps) {
+export function ResultsTable({
+  results,
+  meta,
+  loading,
+  extranetBaseUrl,
+  onExport,
+  onClear,
+}: ResultsTableProps) {
   if (!loading && results.length === 0) {
     return (
       <Win98Window title="Résultats" icon="spreadsheet" className="results-panel empty-state">
@@ -64,10 +72,14 @@ export function ResultsTable({ results, meta, loading, onExport, onClear }: Resu
               <th>Raison</th>
               <th>Ligne</th>
               <th>Erreur</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            {results.map((result) => (
+            {results.map((result) => {
+              const canRegister = result.available === true && !result.error && extranetBaseUrl;
+
+              return (
               <tr key={`${result.name}-${result.sourceRow ?? 'na'}`}>
                 <td>{result.name}</td>
                 <td>
@@ -80,8 +92,24 @@ export function ResultsTable({ results, meta, loading, onExport, onClear }: Resu
                 <td>{humanizeReason(result.reason)}</td>
                 <td>{result.sourceRow ?? '—'}</td>
                 <td>{result.error ?? '—'}</td>
+                <td>
+                  {canRegister ? (
+                    <a
+                      className="win98-button win98-button-compact"
+                      href={getDomainRegisterUrl(extranetBaseUrl, result.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`Ouvrir l'extranet AFNIC pour enregistrer ${result.name}`}
+                    >
+                      Enregistrer
+                    </a>
+                  ) : (
+                    '—'
+                  )}
+                </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

@@ -24,6 +24,12 @@ export function humanizeReason(reason?: string): string {
   return REASON_LABELS[reason] ?? reason;
 }
 
+export function getDomainRegisterUrl(extranetBaseUrl: string, domain: string): string {
+  const base = extranetBaseUrl.replace(/\/$/, '');
+  const params = new URLSearchParams({ searchQuery: domain });
+  return `${base}/en/search?${params.toString()}`;
+}
+
 export function formatAvailability(available: boolean | null): string {
   if (available === null) {
     return 'Erreur';

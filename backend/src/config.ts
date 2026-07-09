@@ -22,6 +22,7 @@ export const config = {
   port: Number(process.env.PORT ?? 3001),
   afnicApiBaseUrl: process.env.AFNIC_API_BASE_URL ?? environmentProfile.apiBaseUrl,
   keycloakTokenUrl: process.env.KEYCLOAK_TOKEN_URL ?? environmentProfile.tokenUrl,
+  extranetBaseUrl: process.env.EXTRANET_BASE_URL ?? environmentProfile.extranetBaseUrl,
   keycloakClientId: process.env.KEYCLOAK_CLIENT_ID ?? 'registrars-api-client',
   keycloakClientSecret: process.env.KEYCLOAK_CLIENT_SECRET ?? '',
   keycloakUsername: process.env.KEYCLOAK_USERNAME ?? '',

@@ -91,10 +91,10 @@ export function LoginForm({
           <button className="win98-button win98-button-primary" type="submit" disabled={loading || !username || !password}>
             {loading ? 'Connexion…' : 'OK'}
           </button>
-          <button className="win98-button" type="button" disabled={loading}>
+          <button className="win98-button win98-button-inert" type="button" disabled={loading}>
             Annuler
           </button>
-          <button className="win98-button" type="button" disabled={loading}>
+          <button className="win98-button win98-button-inert" type="button" disabled={loading}>
             Aide
           </button>
         </div>

@@ -125,6 +125,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
 
       {showFolder && (
         <Win98Window
+          floating
           title="Mes documents"
           icon="folder"
           className="win98-folder-window"
@@ -168,6 +169,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
 
       {showPhoto && (
         <Win98Window
+          floating
           title="photo_profil.bmp — Aperçu"
           icon="image"
           className="win98-photo-viewer"
@@ -186,6 +188,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
 
       {showMinesweeper && (
         <Win98Window
+          floating
           title="Démineur"
           icon="minesweeper"
           className="win98-minesweeper-window"
@@ -202,6 +205,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
 
       {textPreview && (
         <Win98Window
+          floating
           title={textPreview.name}
           icon={textPreview.icon}
           className="win98-text-viewer"
@@ -217,7 +221,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
       )}
 
       {showHelp && (
-        <Win98Window title="Aide sur AFNIC Check 98" icon="window" className="win98-start-dialog" onClose={() => setShowHelp(false)}>
+        <Win98Window floating title="Aide sur AFNIC Check 98" icon="window" className="win98-start-dialog" onClose={() => setShowHelp(false)}>
           <div className="win98-message-box">
             <Win98Icon name="window" size={32} />
             <div>
@@ -240,7 +244,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
       )}
 
       {showRun && (
-        <Win98Window title="Exécuter" icon="computer" className="win98-start-dialog" onClose={() => setShowRun(false)}>
+        <Win98Window floating title="Exécuter" icon="computer" className="win98-start-dialog" onClose={() => setShowRun(false)}>
           <p className="win98-dialog-label">Tapez le nom d&apos;un programme, d&apos;un dossier ou d&apos;un document, puis cliquez sur OK.</p>
           <label className="win98-run-field">
             <span>Ouvrir :</span>
@@ -258,7 +262,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
       )}
 
       {showSearch && (
-        <Win98Window title="Rechercher" icon="search" className="win98-start-dialog" onClose={() => setShowSearch(false)}>
+        <Win98Window floating title="Rechercher" icon="search" className="win98-start-dialog" onClose={() => setShowSearch(false)}>
           <label className="win98-run-field">
             <span>Nom :</span>
             <input type="text" placeholder="*.fr" />
@@ -284,6 +288,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
 
       {showSettings && (
         <Win98Window
+          floating
           title="Panneau de configuration"
           icon="settings"
           className="win98-start-dialog"

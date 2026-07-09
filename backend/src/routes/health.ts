@@ -11,5 +11,6 @@ healthRouter.get('/', (_req, res) => {
     environmentLabel: config.afnicEnvironmentLabel,
     afnicApiBaseUrl: config.afnicApiBaseUrl,
     keycloakTokenUrl: config.keycloakTokenUrl,
+    extranetBaseUrl: config.extranetBaseUrl,
   });
 });

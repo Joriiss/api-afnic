@@ -26,6 +26,7 @@ export interface HealthResponse {
   environmentLabel: string;
   afnicApiBaseUrl: string;
   keycloakTokenUrl: string;
+  extranetBaseUrl: string;
 }
 
 export interface AuthStatusResponse {

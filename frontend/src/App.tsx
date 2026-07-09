@@ -42,6 +42,7 @@ export default function App() {
   const [mockMode, setMockMode] = useState(false);
   const [environmentLabel, setEnvironmentLabel] = useState('Sandbox');
   const [tokenUrl, setTokenUrl] = useState('');
+  const [extranetBaseUrl, setExtranetBaseUrl] = useState('');
 
   useEffect(() => {
     async function loadInitialState() {
@@ -50,6 +51,7 @@ export default function App() {
         setMockMode(health.mockAfnic);
         setEnvironmentLabel(health.environmentLabel);
         setTokenUrl(health.keycloakTokenUrl);
+        setExtranetBaseUrl(health.extranetBaseUrl);
         setAuthStatus(status);
       } catch {
         setError(
@@ -275,6 +277,7 @@ export default function App() {
             results={results}
             meta={meta}
             loading={loading}
+            extranetBaseUrl={extranetBaseUrl}
             onExport={handleExport}
             onClear={handleClear}
           />

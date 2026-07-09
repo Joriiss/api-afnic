@@ -7,6 +7,7 @@ interface Win98WindowProps {
   className?: string;
   icon?: Win98IconName;
   onClose?: () => void;
+  floating?: boolean;
 }
 
 export function Win98Window({
@@ -15,9 +16,12 @@ export function Win98Window({
   className = '',
   icon = 'folder',
   onClose,
+  floating = false,
 }: Win98WindowProps) {
   return (
-    <section className={`win98-window ${className}`.trim()}>
+    <section
+      className={`win98-window ${floating ? 'win98-floating-window' : ''} ${className}`.trim()}
+    >
       <div className="win98-titlebar">
         <span className="win98-titlebar-icon" aria-hidden="true">
           <Win98Icon name={icon} size={16} />

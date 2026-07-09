@@ -56,6 +56,7 @@ select {
   padding-left: 96px;
   padding-right: 12px;
   box-sizing: border-box;
+  pointer-events: none;
 }
 
 .win98-workspace-inner {
@@ -65,6 +66,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  pointer-events: auto;
 }
 
 .win98-desktop-icons {
@@ -74,7 +76,7 @@ select {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  z-index: 0;
+  z-index: 100;
 }
 
 .win98-desktop-icon {
@@ -175,6 +177,17 @@ select {
   align-self: center;
 }
 
+.win98-floating-window {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10050;
+  margin: 0;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
 .win98-titlebar {
   display: flex;
   align-items: center;
@@ -229,6 +242,10 @@ select {
   cursor: default;
 }
 
+.win98-chrome-btn-close:not(:disabled) {
+  cursor: pointer;
+}
+
 .win98-window-body {
   padding: 8px;
   overflow: hidden;
@@ -261,7 +278,25 @@ select {
 .win98-button:disabled {
   color: var(--win98-dark);
   text-shadow: 1px 1px 0 var(--win98-white);
-  cursor: not-allowed;
+  cursor: default;
+  pointer-events: none;
+}
+
+.win98-button-inert {
+  cursor: default;
+}
+
+.win98-button-compact {
+  display: inline-block;
+  padding: 1px 8px;
+  font-size: 10px;
+  text-decoration: none;
+  color: var(--win98-black);
+  white-space: nowrap;
+}
+
+tbody tr:hover .win98-button-compact {
+  color: var(--win98-black);
 }
 
 .win98-button-primary {
@@ -501,6 +536,16 @@ select {
   background: #ffffcc;
 }
 
+.file-dropzone:has(input:disabled) {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.file-dropzone:has(input:disabled):hover {
+  background: var(--win98-white);
+}
+
 .file-dropzone input {
   display: none;
 }
@@ -695,7 +740,6 @@ tbody tr:hover .badge {
 
 .win98-folder-window {
   max-width: 480px;
-  margin-top: 24px;
 }
 
 .win98-explorer-toolbar {
@@ -710,6 +754,7 @@ tbody tr:hover .badge {
 
 .win98-explorer-toolbar span {
   cursor: default;
+  user-select: none;
 }
 
 .win98-explorer-address {
@@ -1036,7 +1081,8 @@ tbody tr:hover .badge {
   position: relative;
 }
 
-button.win98-start-menu-item {
+button.win98-start-menu-item:not(:disabled),
+button.win98-start-submenu-item:not(:disabled) {
   cursor: pointer;
 }
 
@@ -1046,9 +1092,11 @@ button.win98-start-menu-item {
   color: var(--win98-white);
 }
 
-.win98-start-menu-item:disabled {
+.win98-start-menu-item:disabled,
+button.win98-start-menu-item:disabled {
   color: var(--win98-dark);
-  cursor: not-allowed;
+  cursor: default;
+  pointer-events: none;
 }
 
 .win98-start-menu-arrow {
@@ -1088,7 +1136,7 @@ button.win98-start-menu-item {
   font: inherit;
   font-size: 11px;
   text-align: left;
-  cursor: pointer;
+  cursor: default;
 }
 
 .win98-start-submenu-item:hover:not(:disabled) {
@@ -1096,9 +1144,11 @@ button.win98-start-menu-item {
   color: var(--win98-white);
 }
 
-.win98-start-submenu-item:disabled {
+.win98-start-submenu-item:disabled,
+button.win98-start-submenu-item:disabled {
   color: var(--win98-dark);
-  cursor: not-allowed;
+  cursor: default;
+  pointer-events: none;
 }
 
 .win98-start-menu-shutdown {
@@ -1169,10 +1219,6 @@ button.win98-start-menu-item {
   text-align: center;
 }
 
-.win98-shutdown-dialog {
-  z-index: 10002;
-}
-
 .win98-start-icon {
   width: 16px;
   height: 16px;
@@ -1197,6 +1243,8 @@ button.win98-start-menu-item {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 160px;
+  cursor: default;
+  user-select: none;
 }
 
 .win98-taskbar-app-active {
@@ -1221,6 +1269,8 @@ button.win98-start-menu-item {
   align-items: center;
   gap: 3px;
   white-space: nowrap;
+  cursor: default;
+  user-select: none;
 }
 
 .win98-tray-clock {
@@ -1230,6 +1280,8 @@ button.win98-start-menu-item {
   border: 1px inset var(--win98-dark);
   padding: 1px 4px;
   background: var(--win98-gray);
+  cursor: default;
+  user-select: none;
 }
 
 /* ── Scrollbars (WebKit) ── */
