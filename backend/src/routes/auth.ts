@@ -12,7 +12,7 @@ import { config } from '../config.js';
 import { resolveAfnicEnvironment } from '../config/environments.js';
 import { registerContactWithAfnic } from '../services/contactService.js';
 import { hashPassword, verifyPassword } from '../users/password.js';
-import { createUser, findUserByEmail, syncAdminStatus, toPublicProfile } from '../users/store.js';
+import { createUser, findUserByEmail, findUserById, syncAdminStatus, toPublicProfile } from '../users/store.js';
 import { validateRegisterInput } from '../users/validation.js';
 
 function buildAuthPayload(req: Parameters<typeof getSessionUser>[0], user = getSessionUser(req)) {
@@ -33,7 +33,18 @@ function buildAuthPayload(req: Parameters<typeof getSessionUser>[0], user = getS
 
 export const authRouter = Router();
 
-authRouter.get('/status', (req, res) => {
+authRouter.get('/status', async (req, res) => {
+  const sessionUser = getSessionUser(req);
+
+  if (sessionUser) {
+    const storedUser = await findUserById(sessionUser.userId);
+
+    if (storedUser) {
+      const user = await syncAdminStatus(storedUser);
+      req.session.user = buildSessionUser(user, sessionUser.afnicEnvironment);
+    }
+  }
+
   res.json(buildAuthPayload(req));
 });
 

@@ -7,6 +7,7 @@ import {
   login,
   logout,
   register,
+  registerDomain,
   setAfnicEnvironment,
 } from './api/client';
 import { CsvUpload } from './components/CsvUpload';
@@ -21,7 +22,13 @@ import { Win98Marquee } from './components/Win98Marquee';
 import { Win98Taskbar } from './components/Win98Taskbar';
 import { Win98Window } from './components/Win98Window';
 import { Win98EasterEggsProvider } from './context/Win98EasterEggsContext';
-import type { AuthStatusResponse, DomainCheckMeta, DomainCheckResult, RegisterRequest } from './types';
+import type {
+  AuthStatusResponse,
+  DomainCheckMeta,
+  DomainCheckResult,
+  DomainRegisterResponse,
+  RegisterRequest,
+} from './types';
 import { downloadCsv, exportResultsToCsv } from './utils/results';
 import './App.css';
 
@@ -48,9 +55,10 @@ export default function App() {
   const [authStatus, setAuthStatus] = useState<AuthStatusResponse | null>(null);
   const [mockMode, setMockMode] = useState(false);
   const [envSwitchLoading, setEnvSwitchLoading] = useState(false);
+  const [registeringDomain, setRegisteringDomain] = useState<string | null>(null);
+  const [registerSuccess, setRegisterSuccess] = useState<DomainRegisterResponse | null>(null);
 
   const environmentLabel = authStatus?.environmentLabel ?? 'Sandbox';
-  const extranetBaseUrl = authStatus?.extranetBaseUrl ?? '';
   const afnicEnvironment = authStatus?.environment ?? 'sandbox';
 
   useEffect(() => {
@@ -185,6 +193,27 @@ export default function App() {
     setError(null);
   }
 
+  async function handleRegisterDomain(domain: string) {
+    setRegisteringDomain(domain);
+    setError(null);
+
+    try {
+      const response = await registerDomain(domain);
+      setRegisterSuccess(response);
+      setResults((current) =>
+        current.map((result) =>
+          result.name.toLowerCase() === domain.toLowerCase()
+            ? { ...result, available: false, reason: 'IN_USE' }
+            : result,
+        ),
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de l'enregistrement du domaine");
+    } finally {
+      setRegisteringDomain(null);
+    }
+  }
+
   if (authLoading) {
     return (
       <Win98EasterEggsProvider variant="loading">
@@ -310,6 +339,39 @@ export default function App() {
             </Win98Window>
           </header>
 
+          {registerSuccess && (
+            <Win98Window title="Domaine enregistré" icon="document" className="win98-success-window">
+              <div className="win98-message-box">
+                <Win98Icon name="document" size={32} />
+                <div>
+                  <p>
+                    <strong>{registerSuccess.domain}</strong> a été enregistré ({registerSuccess.environment}).
+                  </p>
+                  <p>
+                    Titulaire : <code>{registerSuccess.registrantClientId}</code>
+                  </p>
+                  <p>
+                    Contacts admin/tech : <code>{registerSuccess.adminContactClientId}</code>
+                  </p>
+                  <p>
+                    Durée : {registerSuccess.durationYears} an{registerSuccess.durationYears > 1 ? 's' : ''}
+                  </p>
+                  <p>
+                    Auth-Info (conservez ce mot de passe de transfert) :{' '}
+                    <code className="win98-auth-info">{registerSuccess.authInfo}</code>
+                  </p>
+                </div>
+              </div>
+              <button
+                className="win98-button win98-button-primary"
+                type="button"
+                onClick={() => setRegisterSuccess(null)}
+              >
+                OK
+              </button>
+            </Win98Window>
+          )}
+
           {error && (
             <Win98Window title="Erreur système" icon="warning" className="win98-error-window">
               <div className="win98-message-box win98-message-box-error">
@@ -341,7 +403,8 @@ export default function App() {
             results={results}
             meta={meta}
             loading={loading}
-            extranetBaseUrl={extranetBaseUrl}
+            registeringDomain={registeringDomain}
+            onRegister={handleRegisterDomain}
             onExport={handleExport}
             onClear={handleClear}
           />

@@ -48,6 +48,8 @@ export const config = {
   databaseUrl:
     process.env.DATABASE_URL ?? 'postgres://afnic:afnic@localhost:5432/afnic',
   adminEmails: parseAdminEmails(),
+  afnicDefaultAdminContactId: process.env.AFNIC_DEFAULT_ADMIN_CONTACT_ID ?? 'CTC1607933',
+  defaultDomainDurationYears: Number(process.env.DEFAULT_DOMAIN_DURATION_YEARS ?? 1),
 };
 
 export type { AfnicEnvironment };

@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { getAfnicRuntimeForRequest, requireAuth } from '../auth/session.js';
+import { getAfnicRuntimeForRequest, getSessionUser, requireAuth } from '../auth/session.js';
 import { runDomainChecks } from '../services/domainCheckService.js';
+import { registerDomainForUser } from '../services/domainRegisterService.js';
 import { normalizeDomainNames } from '../utils/normalizeDomains.js';
 import { parseDomainsFromCsv } from '../utils/parseCsv.js';
 
@@ -63,5 +64,36 @@ domainsRouter.post('/check/csv', upload.single('file'), async (req, res) => {
         ? 401
         : 500;
     res.status(status).json({ error: message });
+  }
+});
+
+domainsRouter.post('/register', async (req, res) => {
+  try {
+    const sessionUser = getSessionUser(req);
+
+    if (!sessionUser) {
+      res.status(401).json({ error: 'Connexion requise' });
+      return;
+    }
+
+    const domain = String(req.body?.domain ?? '').trim();
+
+    if (!domain) {
+      res.status(400).json({ error: 'Le nom de domaine est obligatoire' });
+      return;
+    }
+
+    const runtime = getAfnicRuntimeForRequest(req);
+    const result = await registerDomainForUser({
+      userId: sessionUser.userId,
+      domain,
+      registrantClientId: sessionUser.afnicClientId,
+      runtime,
+    });
+
+    res.status(201).json(result);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Échec de l'enregistrement du domaine";
+    res.status(400).json({ error: message });
   }
 });

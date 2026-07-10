@@ -319,6 +319,19 @@ tbody tr:hover .win98-button-compact {
   color: var(--win98-black);
 }
 
+.win98-auth-info {
+  font-family: var(--win98-mono);
+  font-size: 11px;
+  background: var(--win98-white);
+  padding: 2px 4px;
+  border: 1px inset var(--win98-dark);
+  word-break: break-all;
+}
+
+.win98-success-window .win98-button {
+  margin-top: 8px;
+}
+
 .win98-form-actions {
   display: flex;
   gap: 6px;

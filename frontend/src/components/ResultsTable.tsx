@@ -1,5 +1,5 @@
 import type { DomainCheckMeta, DomainCheckResult } from '../types';
-import { formatAvailability, getDomainRegisterUrl, humanizeReason } from '../utils/results';
+import { formatAvailability, humanizeReason } from '../utils/results';
 import { Win98Icon } from './Win98Icon';
 import { Win98Window } from './Win98Window';
 
@@ -7,7 +7,8 @@ interface ResultsTableProps {
   results: DomainCheckResult[];
   meta?: DomainCheckMeta;
   loading?: boolean;
-  extranetBaseUrl?: string;
+  registeringDomain?: string | null;
+  onRegister: (domain: string) => Promise<void>;
   onExport: () => void;
   onClear: () => void;
 }
@@ -16,7 +17,8 @@ export function ResultsTable({
   results,
   meta,
   loading,
-  extranetBaseUrl,
+  registeringDomain,
+  onRegister,
   onExport,
   onClear,
 }: ResultsTableProps) {
@@ -77,37 +79,38 @@ export function ResultsTable({
           </thead>
           <tbody>
             {results.map((result) => {
-              const canRegister = result.available === true && !result.error && extranetBaseUrl;
+              const canRegister = result.available === true && !result.error;
+              const isRegistering = registeringDomain === result.name;
 
               return (
-              <tr key={`${result.name}-${result.sourceRow ?? 'na'}`}>
-                <td>{result.name}</td>
-                <td>
-                  <span
-                    className={`badge ${result.available ? 'badge-success' : result.available === false ? 'badge-danger' : 'badge-muted'}`}
-                  >
-                    {formatAvailability(result.available)}
-                  </span>
-                </td>
-                <td>{humanizeReason(result.reason)}</td>
-                <td>{result.sourceRow ?? '—'}</td>
-                <td>{result.error ?? '—'}</td>
-                <td>
-                  {canRegister ? (
-                    <a
-                      className="win98-button win98-button-compact"
-                      href={getDomainRegisterUrl(extranetBaseUrl, result.name)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title={`Ouvrir l'extranet AFNIC pour enregistrer ${result.name}`}
+                <tr key={`${result.name}-${result.sourceRow ?? 'na'}`}>
+                  <td>{result.name}</td>
+                  <td>
+                    <span
+                      className={`badge ${result.available ? 'badge-success' : result.available === false ? 'badge-danger' : 'badge-muted'}`}
                     >
-                      Enregistrer
-                    </a>
-                  ) : (
-                    '—'
-                  )}
-                </td>
-              </tr>
+                      {formatAvailability(result.available)}
+                    </span>
+                  </td>
+                  <td>{humanizeReason(result.reason)}</td>
+                  <td>{result.sourceRow ?? '—'}</td>
+                  <td>{result.error ?? '—'}</td>
+                  <td>
+                    {canRegister ? (
+                      <button
+                        type="button"
+                        className="win98-button win98-button-compact"
+                        disabled={Boolean(registeringDomain)}
+                        onClick={() => void onRegister(result.name)}
+                        title={`Enregistrer ${result.name} via l'API AFNIC`}
+                      >
+                        {isRegistering ? 'Enregistrement…' : 'Enregistrer'}
+                      </button>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
+                </tr>
               );
             })}
           </tbody>

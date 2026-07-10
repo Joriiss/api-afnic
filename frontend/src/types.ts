@@ -19,6 +19,17 @@ export interface DomainCheckResponse {
   meta: DomainCheckMeta;
 }
 
+export interface DomainRegisterResponse {
+  domain: string;
+  authInfo: string;
+  registrantClientId: string;
+  adminContactClientId: string;
+  durationYears: number;
+  environment: string;
+  creationDate?: string;
+  expirationDate?: string;
+}
+
 export interface HealthResponse {
   status: string;
   mockAfnic: boolean;

@@ -2,6 +2,7 @@ import type {
   AuthResponse,
   AuthStatusResponse,
   DomainCheckResponse,
+  DomainRegisterResponse,
   HealthResponse,
   RegisterRequest,
 } from '../types';
@@ -84,6 +85,17 @@ export async function checkDomains(names: string[]): Promise<DomainCheckResponse
   });
 
   return parseJson<DomainCheckResponse>(response);
+}
+
+export async function registerDomain(domain: string): Promise<DomainRegisterResponse> {
+  const response = await fetch('/api/domains/register', {
+    ...fetchOptions,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ domain }),
+  });
+
+  return parseJson<DomainRegisterResponse>(response);
 }
 
 export async function checkDomainsFromCsv(file: File): Promise<DomainCheckResponse> {

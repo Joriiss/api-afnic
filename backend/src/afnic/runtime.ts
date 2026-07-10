@@ -31,16 +31,21 @@ export function resolveAfnicRuntime(environment?: string): AfnicRuntime {
   };
 }
 
+function nonEmpty(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
 export function getRegistrarCredentials(environment: AfnicEnvironment): RegistrarCredentials {
   if (environment === 'production') {
     return {
-      username: process.env.KEYCLOAK_USERNAME_PRODUCTION ?? config.keycloakUsername,
-      password: process.env.KEYCLOAK_PASSWORD_PRODUCTION ?? config.keycloakPassword,
+      username: nonEmpty(process.env.KEYCLOAK_USERNAME_PRODUCTION) ?? config.keycloakUsername,
+      password: nonEmpty(process.env.KEYCLOAK_PASSWORD_PRODUCTION) ?? config.keycloakPassword,
     };
   }
 
   return {
-    username: process.env.KEYCLOAK_USERNAME_SANDBOX ?? config.keycloakUsername,
-    password: process.env.KEYCLOAK_PASSWORD_SANDBOX ?? config.keycloakPassword,
+    username: nonEmpty(process.env.KEYCLOAK_USERNAME_SANDBOX) ?? config.keycloakUsername,
+    password: nonEmpty(process.env.KEYCLOAK_PASSWORD_SANDBOX) ?? config.keycloakPassword,
   };
 }
