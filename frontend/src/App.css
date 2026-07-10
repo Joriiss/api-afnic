@@ -324,7 +324,7 @@
   top: calc(100% + 4px);
   right: 0;
   z-index: 200;
-  width: 240px;
+  width: 280px;
   border: 2px outset var(--win98-gray);
   background: var(--win98-gray);
   box-shadow: 2px 2px 0 var(--win98-black);
@@ -332,6 +332,15 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.admin-settings-window.win98-floating-window {
+  width: min(320px, calc(100vw - 24px));
+  max-width: 320px;
+}
+
+.admin-settings-window .win98-window-body {
+  overflow: visible;
 }
 
 .admin-settings-section + .admin-settings-section {
