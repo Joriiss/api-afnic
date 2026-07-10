@@ -1,4 +1,5 @@
-import { Win98Window } from './Win98Window';
+import { Panel } from './ui/Panel';
+import { Button } from './ui/Button';
 
 interface SearchInputProps {
   value: string;
@@ -9,7 +10,7 @@ interface SearchInputProps {
 
 export function SearchInput({ value, onChange, onSubmit, disabled }: SearchInputProps) {
   return (
-    <Win98Window title="Rechercher des domaines" icon="search">
+    <Panel title="Rechercher des domaines" icon="search">
       <div className="panel-header">
         <h2>Recherche manuelle</h2>
         <p>
@@ -27,9 +28,9 @@ export function SearchInput({ value, onChange, onSubmit, disabled }: SearchInput
         disabled={disabled}
       />
 
-      <button className="win98-button win98-button-primary" onClick={onSubmit} disabled={disabled || !value.trim()}>
+      <Button variant="primary" onClick={onSubmit} disabled={disabled || !value.trim()}>
         Vérifier les domaines
-      </button>
-    </Win98Window>
+      </Button>
+    </Panel>
   );
 }

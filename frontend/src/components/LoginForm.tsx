@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Win98Window } from './Win98Window';
+import { Panel } from './ui/Panel';
+import { Button } from './ui/Button';
 
 interface LoginFormProps {
   onLogin: (email: string, password: string) => Promise<void>;
@@ -19,7 +20,7 @@ export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMod
   }
 
   return (
-    <Win98Window title="Connexion client" icon="key" className="login-panel">
+    <Panel title="Connexion" icon="key" className="login-panel">
       <div className="panel-header">
         <h2>Connexion</h2>
         <fieldset className="win98-fieldset">
@@ -35,7 +36,7 @@ export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMod
 
       <form className="login-form" onSubmit={(event) => void handleSubmit(event)}>
         <label className="field">
-          <span>E-mail :</span>
+          <span>E-mail</span>
           <input
             type="email"
             autoComplete="email"
@@ -47,7 +48,7 @@ export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMod
         </label>
 
         <label className="field">
-          <span>Mot de passe :</span>
+          <span>Mot de passe</span>
           <input
             type="password"
             autoComplete="current-password"
@@ -65,14 +66,14 @@ export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMod
         )}
 
         <div className="win98-form-actions">
-          <button className="win98-button win98-button-primary" type="submit" disabled={loading || !email || !password}>
+          <Button variant="primary" type="submit" disabled={loading || !email || !password}>
             {loading ? 'Connexion…' : 'Se connecter'}
-          </button>
-          <button className="win98-button" type="button" disabled={loading} onClick={onSwitchToRegister}>
+          </Button>
+          <Button type="button" disabled={loading} onClick={onSwitchToRegister}>
             Créer un compte
-          </button>
+          </Button>
         </div>
       </form>
-    </Win98Window>
+    </Panel>
   );
 }

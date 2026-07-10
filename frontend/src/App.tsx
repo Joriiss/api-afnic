@@ -11,17 +11,27 @@ import {
   setAfnicEnvironment,
 } from './api/client';
 import { CsvUpload } from './components/CsvUpload';
+import { EnvironmentSwitcher } from './components/EnvironmentSwitcher';
 import { LoginForm } from './components/LoginForm';
+import {
+  ModernCenteredPage,
+  ModernHeader,
+  ModernPage,
+} from './components/layouts/ModernLayout';
 import { RegisterForm } from './components/RegisterForm';
 import { ResultsTable } from './components/ResultsTable';
 import { SearchInput } from './components/SearchInput';
+import { ThemeToggle } from './components/ThemeToggle';
+import { Badge } from './components/ui/Badge';
+import { Button } from './components/ui/Button';
+import { Panel } from './components/ui/Panel';
 import { Win98DesktopIcons } from './components/Win98DesktopIcons';
-import { Win98EnvironmentSwitcher } from './components/Win98EnvironmentSwitcher';
 import { Win98Icon } from './components/Win98Icon';
 import { Win98Marquee } from './components/Win98Marquee';
 import { Win98Taskbar } from './components/Win98Taskbar';
 import { Win98Window } from './components/Win98Window';
 import { Win98EasterEggsProvider } from './context/Win98EasterEggsContext';
+import { useTheme } from './context/ThemeContext';
 import type {
   AuthStatusResponse,
   DomainCheckMeta,
@@ -31,6 +41,7 @@ import type {
 } from './types';
 import { downloadCsv, exportResultsToCsv } from './utils/results';
 import './App.css';
+import './modern.css';
 
 function splitSearchInput(value: string): string[] {
   return value
@@ -39,7 +50,104 @@ function splitSearchInput(value: string): string[] {
     .filter(Boolean);
 }
 
+function RegisterSuccessAlert({
+  data,
+  onDismiss,
+}: {
+  data: DomainRegisterResponse;
+  onDismiss: () => void;
+}) {
+  const { theme } = useTheme();
+
+  if (theme === 'win98') {
+    return (
+      <Win98Window title="Domaine enregistré" icon="document" className="win98-success-window">
+        <div className="win98-message-box">
+          <Win98Icon name="document" size={32} />
+          <div>
+            <p>
+              <strong>{data.domain}</strong> a été enregistré ({data.environment}).
+            </p>
+            <p>
+              Titulaire : <code>{data.registrantClientId}</code>
+            </p>
+            <p>
+              Contacts admin/tech : <code>{data.adminContactClientId}</code>
+            </p>
+            <p>
+              Durée : {data.durationYears} an{data.durationYears > 1 ? 's' : ''}
+            </p>
+            <p>
+              Auth-Info (conservez ce mot de passe de transfert) :{' '}
+              <code className="win98-auth-info">{data.authInfo}</code>
+            </p>
+          </div>
+        </div>
+        <Button variant="primary" type="button" onClick={onDismiss}>
+          OK
+        </Button>
+      </Win98Window>
+    );
+  }
+
+  return (
+    <section className="ui-alert ui-alert-success">
+      <p>
+        <strong>{data.domain}</strong> a été enregistré ({data.environment}).
+      </p>
+      <p>
+        Titulaire : <code>{data.registrantClientId}</code>
+      </p>
+      <p>
+        Contacts admin/tech : <code>{data.adminContactClientId}</code>
+      </p>
+      <p>
+        Durée : {data.durationYears} an{data.durationYears > 1 ? 's' : ''}
+      </p>
+      <p>
+        Auth-Info (conservez ce mot de passe de transfert) :{' '}
+        <code className="win98-auth-info">{data.authInfo}</code>
+      </p>
+      <div className="ui-alert-actions">
+        <Button variant="primary" type="button" onClick={onDismiss}>
+          Fermer
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+function ErrorAlert({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  const { theme } = useTheme();
+
+  if (theme === 'win98') {
+    return (
+      <Win98Window title="Erreur système" icon="warning" className="win98-error-window">
+        <div className="win98-message-box win98-message-box-error">
+          <Win98Icon name="error" size={32} />
+          <p>{message}</p>
+        </div>
+        <Button variant="primary" type="button" onClick={onDismiss}>
+          OK
+        </Button>
+      </Win98Window>
+    );
+  }
+
+  return (
+    <section className="ui-alert ui-alert-error">
+      <p>{message}</p>
+      <div className="ui-alert-actions">
+        <Button variant="primary" type="button" onClick={onDismiss}>
+          Fermer
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 export default function App() {
+  const { theme, setCanUseRetro } = useTheme();
   const [searchValue, setSearchValue] = useState('');
   const [csvFile, setCsvFile] = useState<File | null>(null);
   const [results, setResults] = useState<DomainCheckResult[]>([]);
@@ -60,6 +168,10 @@ export default function App() {
 
   const environmentLabel = authStatus?.environmentLabel ?? 'Sandbox';
   const afnicEnvironment = authStatus?.environment ?? 'sandbox';
+
+  useEffect(() => {
+    setCanUseRetro(Boolean(authStatus?.isAdmin));
+  }, [authStatus?.isAdmin, setCanUseRetro]);
 
   useEffect(() => {
     async function loadInitialState() {
@@ -214,12 +326,59 @@ export default function App() {
     }
   }
 
+  const workspace = (
+    <>
+      {registerSuccess && (
+        <RegisterSuccessAlert data={registerSuccess} onDismiss={() => setRegisterSuccess(null)} />
+      )}
+
+      {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
+
+      <main className={theme === 'win98' ? 'win98-content-grid' : 'modern-content-grid'}>
+        <SearchInput
+          value={searchValue}
+          onChange={setSearchValue}
+          onSubmit={handleSearchSubmit}
+          disabled={loading}
+        />
+        <CsvUpload
+          file={csvFile}
+          onFileChange={setCsvFile}
+          onSubmit={handleCsvSubmit}
+          disabled={loading}
+        />
+      </main>
+
+      <ResultsTable
+        results={results}
+        meta={meta}
+        loading={loading}
+        registeringDomain={registeringDomain}
+        onRegister={handleRegisterDomain}
+        onExport={handleExport}
+        onClear={handleClear}
+      />
+    </>
+  );
+
   if (authLoading) {
+    if (theme === 'modern') {
+      return (
+        <ModernCenteredPage>
+          <Panel title="Chargement">
+            <div className="modern-loading">
+              <span className="modern-spinner" aria-hidden="true" />
+              <span>Initialisation de l&apos;application…</span>
+            </div>
+          </Panel>
+        </ModernCenteredPage>
+      );
+    }
+
     return (
       <Win98EasterEggsProvider variant="loading">
         <div className="win98-desktop">
           <Win98DesktopIcons />
-
           <div className="win98-workspace">
             <div className="win98-workspace-inner">
               <Win98Window title="AFNIC Check — Chargement…" icon="hourglass" className="win98-window-centered">
@@ -230,7 +389,6 @@ export default function App() {
               </Win98Window>
             </div>
           </div>
-
           <Win98Taskbar />
         </div>
       </Win98EasterEggsProvider>
@@ -238,11 +396,63 @@ export default function App() {
   }
 
   if (!isAuthenticated) {
+    const authForm =
+      authView === 'login' ? (
+        <LoginForm
+          onLogin={handleLogin}
+          onSwitchToRegister={() => {
+            setAuthView('register');
+            setLoginError(null);
+          }}
+          loading={loginLoading}
+          error={loginError}
+          mockMode={mockMode}
+        />
+      ) : (
+        <RegisterForm
+          onRegister={handleRegister}
+          onSwitchToLogin={() => {
+            setAuthView('login');
+            setRegisterError(null);
+          }}
+          loading={registerLoading}
+          error={registerError}
+          mockMode={mockMode}
+        />
+      );
+
+    if (theme === 'modern') {
+      return (
+        <ModernPage
+          header={
+            <ModernHeader
+              showAuthActions={false}
+              environmentLabel={environmentLabel}
+              afnicEnvironment={afnicEnvironment}
+              mockMode={mockMode}
+              isAdmin={authStatus?.isAdmin}
+            />
+          }
+        >
+          <div className="modern-auth-stack">
+            <section className="modern-hero">
+              <h1>Vérification de disponibilité</h1>
+              <p>
+                Créez un compte client pour vérifier la disponibilité des domaines `.fr`. Vos
+                informations sont enregistrées comme contact AFNIC.
+              </p>
+            </section>
+            {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
+            {authForm}
+          </div>
+        </ModernPage>
+      );
+    }
+
     return (
       <Win98EasterEggsProvider variant="login">
         <div className="win98-desktop">
           <Win98DesktopIcons />
-
           <div className="win98-workspace">
             <div className="win98-workspace-inner">
               <header className="win98-hero win98-hero-centered">
@@ -256,36 +466,46 @@ export default function App() {
                   <p className="win98-best-viewed">Meilleure résolution : 800×600 — 256 couleurs</p>
                 </Win98Window>
               </header>
-
-              {authView === 'login' ? (
-                <LoginForm
-                  onLogin={handleLogin}
-                  onSwitchToRegister={() => {
-                    setAuthView('register');
-                    setLoginError(null);
-                  }}
-                  loading={loginLoading}
-                  error={loginError}
-                  mockMode={mockMode}
-                />
-              ) : (
-                <RegisterForm
-                  onRegister={handleRegister}
-                  onSwitchToLogin={() => {
-                    setAuthView('login');
-                    setRegisterError(null);
-                  }}
-                  loading={registerLoading}
-                  error={registerError}
-                  mockMode={mockMode}
-                />
-              )}
+              {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
+              {authForm}
             </div>
           </div>
-
           <Win98Taskbar environmentLabel={environmentLabel} mockMode={mockMode} />
         </div>
       </Win98EasterEggsProvider>
+    );
+  }
+
+  if (theme === 'modern') {
+    return (
+      <ModernPage
+        header={
+          <ModernHeader
+            userLabel={authStatus?.contactName ?? authStatus?.email}
+            environmentLabel={environmentLabel}
+            afnicEnvironment={afnicEnvironment}
+            mockMode={mockMode}
+            isAdmin={authStatus?.isAdmin}
+            envSwitchLoading={envSwitchLoading}
+            onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+            onLogout={() => void handleLogout()}
+          />
+        }
+      >
+        <section className="modern-hero">
+          <h1>Vérification de disponibilité</h1>
+          <p>
+            Vérifiez si des noms de domaine `.fr` sont disponibles à l&apos;enregistrement via
+            l&apos;API AFNIC Phoenix.
+          </p>
+          {authStatus?.afnicClientId && (
+            <p>
+              Contact AFNIC : <code>{authStatus.afnicClientId}</code>
+            </p>
+          )}
+        </section>
+        {workspace}
+      </ModernPage>
     );
   }
 
@@ -293,131 +513,57 @@ export default function App() {
     <Win98EasterEggsProvider variant="main">
       <div className="win98-desktop">
         <Win98DesktopIcons />
+        <div className="win98-workspace">
+          <div className="win98-workspace-inner">
+            <header className="win98-hero">
+              <Win98Window title="AFNIC Domain Checker v1.0 (Shareware)" icon="internet">
+                <div className="win98-hero-layout">
+                  <div className="win98-hero-actions">
+                    {!mockMode && (
+                      <Badge tone={environmentLabel === 'Production' ? 'danger' : 'default'}>
+                        {environmentLabel}
+                      </Badge>
+                    )}
+                    {authStatus?.isAdmin && !mockMode && (
+                      <EnvironmentSwitcher
+                        environment={afnicEnvironment}
+                        loading={envSwitchLoading}
+                        onChange={(environment) => void handleEnvironmentChange(environment)}
+                      />
+                    )}
+                    {mockMode && <Badge tone="warn">Mode simulation</Badge>}
+                    {authStatus?.isAdmin && <Badge>Admin</Badge>}
+                    <ThemeToggle />
+                    <Button type="button" onClick={() => void handleLogout()}>
+                      Se déconnecter
+                    </Button>
+                  </div>
 
-      <div className="win98-workspace">
-        <div className="win98-workspace-inner">
-          <header className="win98-hero">
-            <Win98Window title="AFNIC Domain Checker v1.0 (Shareware)" icon="internet">
-              <div className="win98-hero-layout">
-                <div className="win98-hero-actions">
-                  {!mockMode && (
-                    <span
-                      className={`win98-status-badge ${environmentLabel === 'Production' ? 'win98-status-badge-danger' : ''}`}
-                    >
-                      {environmentLabel}
-                    </span>
-                  )}
-                  {authStatus?.isAdmin && !mockMode && (
-                    <Win98EnvironmentSwitcher
-                      environment={afnicEnvironment}
-                      loading={envSwitchLoading}
-                      onChange={(environment) => void handleEnvironmentChange(environment)}
-                    />
-                  )}
-                  {mockMode && <span className="win98-status-badge win98-status-badge-warn">Mode simulation</span>}
-                  {authStatus?.isAdmin && (
-                    <span className="win98-status-badge">Admin</span>
-                  )}
-                  <button className="win98-button" type="button" onClick={() => void handleLogout()}>
-                    Se déconnecter
-                  </button>
-                </div>
-
-                <Win98Marquee
-                  text={
-                    authStatus?.email
-                      ? `Client connecté : ${authStatus.contactName ?? authStatus.email} (${authStatus.afnicClientId ?? 'contact'})`
-                      : 'Vérification de domaines .fr'
-                  }
-                />
-                <h1 className="win98-hero-title">Vérification de disponibilité</h1>
-                <p className="win98-hero-copy">
-                  Vérifiez si des noms de domaine `.fr` sont disponibles à l&apos;enregistrement via
-                  l&apos;API AFNIC Phoenix.
-                </p>
-              </div>
-            </Win98Window>
-          </header>
-
-          {registerSuccess && (
-            <Win98Window title="Domaine enregistré" icon="document" className="win98-success-window">
-              <div className="win98-message-box">
-                <Win98Icon name="document" size={32} />
-                <div>
-                  <p>
-                    <strong>{registerSuccess.domain}</strong> a été enregistré ({registerSuccess.environment}).
-                  </p>
-                  <p>
-                    Titulaire : <code>{registerSuccess.registrantClientId}</code>
-                  </p>
-                  <p>
-                    Contacts admin/tech : <code>{registerSuccess.adminContactClientId}</code>
-                  </p>
-                  <p>
-                    Durée : {registerSuccess.durationYears} an{registerSuccess.durationYears > 1 ? 's' : ''}
-                  </p>
-                  <p>
-                    Auth-Info (conservez ce mot de passe de transfert) :{' '}
-                    <code className="win98-auth-info">{registerSuccess.authInfo}</code>
+                  <Win98Marquee
+                    text={
+                      authStatus?.email
+                        ? `Client connecté : ${authStatus.contactName ?? authStatus.email} (${authStatus.afnicClientId ?? 'contact'})`
+                        : 'Vérification de domaines .fr'
+                    }
+                  />
+                  <h1 className="win98-hero-title">Vérification de disponibilité</h1>
+                  <p className="win98-hero-copy">
+                    Vérifiez si des noms de domaine `.fr` sont disponibles à l&apos;enregistrement via
+                    l&apos;API AFNIC Phoenix.
                   </p>
                 </div>
-              </div>
-              <button
-                className="win98-button win98-button-primary"
-                type="button"
-                onClick={() => setRegisterSuccess(null)}
-              >
-                OK
-              </button>
-            </Win98Window>
-          )}
-
-          {error && (
-            <Win98Window title="Erreur système" icon="warning" className="win98-error-window">
-              <div className="win98-message-box win98-message-box-error">
-                <Win98Icon name="error" size={32} />
-                <p>{error}</p>
-              </div>
-              <button className="win98-button win98-button-primary" type="button" onClick={() => setError(null)}>
-                OK
-              </button>
-            </Win98Window>
-          )}
-
-          <main className="win98-content-grid">
-            <SearchInput
-              value={searchValue}
-              onChange={setSearchValue}
-              onSubmit={handleSearchSubmit}
-              disabled={loading}
-            />
-            <CsvUpload
-              file={csvFile}
-              onFileChange={setCsvFile}
-              onSubmit={handleCsvSubmit}
-              disabled={loading}
-            />
-          </main>
-
-          <ResultsTable
-            results={results}
-            meta={meta}
-            loading={loading}
-            registeringDomain={registeringDomain}
-            onRegister={handleRegisterDomain}
-            onExport={handleExport}
-            onClear={handleClear}
-          />
+              </Win98Window>
+            </header>
+            {workspace}
+          </div>
         </div>
-      </div>
-
-      <Win98Taskbar
-        username={authStatus?.contactName ?? authStatus?.email}
-        environmentLabel={environmentLabel}
-        mockMode={mockMode}
-        onLogout={() => void handleLogout()}
-        isAuthenticated
-      />
+        <Win98Taskbar
+          username={authStatus?.contactName ?? authStatus?.email}
+          environmentLabel={environmentLabel}
+          mockMode={mockMode}
+          onLogout={() => void handleLogout()}
+          isAuthenticated
+        />
       </div>
     </Win98EasterEggsProvider>
   );

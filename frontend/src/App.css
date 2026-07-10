@@ -2,7 +2,7 @@
    AFNIC Check 98 — Authentic Windows 98 Vibes
    ═══════════════════════════════════════════ */
 
-:root {
+[data-theme='win98'] {
   --win98-teal: #008080;
   --win98-gray: #c0c0c0;
   --win98-dark: #808080;
@@ -27,10 +27,10 @@
   -moz-osx-font-smoothing: unset;
 }
 
-button,
-textarea,
-input,
-select {
+[data-theme='win98'] button,
+[data-theme='win98'] textarea,
+[data-theme='win98'] input,
+[data-theme='win98'] select {
   font: inherit;
 }
 

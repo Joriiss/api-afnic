@@ -1,7 +1,9 @@
 import type { DomainCheckMeta, DomainCheckResult } from '../types';
 import { formatAvailability, humanizeReason } from '../utils/results';
+import { useTheme } from '../context/ThemeContext';
 import { Win98Icon } from './Win98Icon';
-import { Win98Window } from './Win98Window';
+import { Panel } from './ui/Panel';
+import { Button } from './ui/Button';
 
 interface ResultsTableProps {
   results: DomainCheckResult[];
@@ -22,18 +24,30 @@ export function ResultsTable({
   onExport,
   onClear,
 }: ResultsTableProps) {
+  const { theme } = useTheme();
+
   if (!loading && results.length === 0) {
     return (
-      <Win98Window title="Résultats" icon="spreadsheet" className="results-panel empty-state">
+      <Panel
+        title="Résultats"
+        icon="spreadsheet"
+        className="results-panel empty-state"
+      >
         <h2>Aucun résultat pour le moment</h2>
         <p>Lancez une recherche ou importez un CSV pour afficher la disponibilité des domaines.</p>
-        <p className="win98-empty-hint">Astuce : Appuyez sur F1 pour l&apos;aide (non implémentée).</p>
-      </Win98Window>
+        {theme === 'win98' && (
+          <p className="win98-empty-hint">Astuce : Appuyez sur F1 pour l&apos;aide (non implémentée).</p>
+        )}
+      </Panel>
     );
   }
 
   return (
-    <Win98Window title="Résultats — Feuille de calcul" icon="spreadsheet" className="results-panel">
+    <Panel
+      title={theme === 'win98' ? 'Résultats — Feuille de calcul' : 'Résultats'}
+      icon="spreadsheet"
+      className="results-panel"
+    >
       <div className="panel-header results-header">
         <div>
           <h2>Résultats</h2>
@@ -49,19 +63,25 @@ export function ResultsTable({
         </div>
 
         <div className="results-actions">
-          <button className="win98-button" onClick={onExport} disabled={results.length === 0}>
+          <Button onClick={onExport} disabled={results.length === 0}>
             Exporter CSV
-          </button>
-          <button className="win98-button" onClick={onClear} disabled={results.length === 0}>
+          </Button>
+          <Button onClick={onClear} disabled={results.length === 0}>
             Effacer tout
-          </button>
+          </Button>
         </div>
       </div>
 
       {loading && (
         <div className="loading-banner">
-          <Win98Icon name="hourglass" size={24} className="win98-hourglass" />
-          Vérification des domaines en cours… Ne pas éteindre l&apos;ordinateur.
+          {theme === 'win98' ? (
+            <Win98Icon name="hourglass" size={24} className="win98-hourglass" />
+          ) : (
+            <span className="modern-spinner" aria-hidden="true" />
+          )}
+          {theme === 'win98'
+            ? 'Vérification des domaines en cours… Ne pas éteindre l&apos;ordinateur.'
+            : 'Vérification des domaines en cours…'}
         </div>
       )}
 
@@ -97,15 +117,15 @@ export function ResultsTable({
                   <td>{result.error ?? '—'}</td>
                   <td>
                     {canRegister ? (
-                      <button
+                      <Button
                         type="button"
-                        className="win98-button win98-button-compact"
+                        variant="compact"
                         disabled={Boolean(registeringDomain)}
                         onClick={() => void onRegister(result.name)}
                         title={`Enregistrer ${result.name} via l'API AFNIC`}
                       >
                         {isRegistering ? 'Enregistrement…' : 'Enregistrer'}
-                      </button>
+                      </Button>
                     ) : (
                       '—'
                     )}
@@ -116,6 +136,6 @@ export function ResultsTable({
           </tbody>
         </table>
       </div>
-    </Win98Window>
+    </Panel>
   );
 }

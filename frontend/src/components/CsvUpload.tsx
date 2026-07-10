@@ -1,5 +1,7 @@
+import { useTheme } from '../context/ThemeContext';
 import { Win98Icon } from './Win98Icon';
-import { Win98Window } from './Win98Window';
+import { Panel } from './ui/Panel';
+import { Button } from './ui/Button';
 
 interface CsvUploadProps {
   file: File | null;
@@ -9,8 +11,10 @@ interface CsvUploadProps {
 }
 
 export function CsvUpload({ file, onFileChange, onSubmit, disabled }: CsvUploadProps) {
+  const { theme } = useTheme();
+
   return (
-    <Win98Window title="Explorateur de fichiers CSV" icon="folder">
+    <Panel title={theme === 'win98' ? 'Explorateur de fichiers CSV' : 'Import CSV'} icon="folder">
       <div className="panel-header">
         <h2>Importer un CSV</h2>
         <p>
@@ -26,13 +30,19 @@ export function CsvUpload({ file, onFileChange, onSubmit, disabled }: CsvUploadP
           disabled={disabled}
           onChange={(event) => onFileChange(event.target.files?.[0] ?? null)}
         />
-        <Win98Icon name="document" size={32} className="file-dropzone-icon" />
-        <span>{file ? file.name : 'Double-cliquez pour choisir un fichier CSV'}</span>
+        {theme === 'win98' && <Win98Icon name="document" size={32} className="file-dropzone-icon" />}
+        <span>
+          {file
+            ? file.name
+            : theme === 'win98'
+              ? 'Double-cliquez pour choisir un fichier CSV'
+              : 'Cliquez pour choisir un fichier CSV'}
+        </span>
       </label>
 
-      <button className="win98-button win98-button-primary" onClick={onSubmit} disabled={disabled || !file}>
-        Ouvrir et vérifier
-      </button>
-    </Win98Window>
+      <Button variant="primary" onClick={onSubmit} disabled={disabled || !file}>
+        {theme === 'win98' ? 'Ouvrir et vérifier' : 'Vérifier le CSV'}
+      </Button>
+    </Panel>
   );
 }

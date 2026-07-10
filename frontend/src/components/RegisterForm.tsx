@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ContactKind, MoralLegalStatus, RegisterRequest } from '../types';
-import { Win98Window } from './Win98Window';
+import { Panel } from './ui/Panel';
+import { Button } from './ui/Button';
 
 interface RegisterFormProps {
   onRegister: (payload: RegisterRequest) => Promise<void>;
@@ -66,7 +67,7 @@ export function RegisterForm({
   }
 
   return (
-    <Win98Window title="Inscription client" icon="document" className="register-panel">
+    <Panel title="Inscription" icon="document" className="register-panel">
       <div className="panel-header">
         <h2>Créer un compte</h2>
         <fieldset className="win98-fieldset">
@@ -234,14 +235,14 @@ export function RegisterForm({
         )}
 
         <div className="win98-form-actions">
-          <button className="win98-button win98-button-primary" type="submit" disabled={loading}>
+          <Button variant="primary" type="submit" disabled={loading}>
             {loading ? 'Inscription…' : 'Créer mon compte'}
-          </button>
-          <button className="win98-button" type="button" disabled={loading} onClick={onSwitchToLogin}>
+          </Button>
+          <Button type="button" disabled={loading} onClick={onSwitchToLogin}>
             J&apos;ai déjà un compte
-          </button>
+          </Button>
         </div>
       </form>
-    </Win98Window>
+    </Panel>
   );
 }
