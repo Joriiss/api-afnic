@@ -286,6 +286,10 @@ select {
   cursor: default;
 }
 
+.win98-button-primary {
+  font-weight: bold;
+}
+
 .win98-button-compact {
   display: inline-block;
   padding: 1px 8px;
@@ -295,12 +299,24 @@ select {
   white-space: nowrap;
 }
 
-tbody tr:hover .win98-button-compact {
-  color: var(--win98-black);
+.win98-button-danger {
+  background: #ffcccc;
 }
 
-.win98-button-primary {
+.win98-env-switcher {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.win98-env-switcher-label {
+  font-size: 10px;
   font-weight: bold;
+}
+
+tbody tr:hover .win98-button-compact {
+  color: var(--win98-black);
 }
 
 .win98-form-actions {

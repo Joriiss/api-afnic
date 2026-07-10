@@ -26,6 +26,7 @@ export interface RegisterRequest {
 export interface UserProfile {
   id: string;
   email: string;
+  isAdmin: boolean;
   contactKind: ContactKind;
   afnicClientId: string;
   contactName: string;
@@ -39,13 +40,19 @@ export interface AuthStatusResponse {
   email?: string;
   contactName?: string;
   afnicClientId?: string;
+  isAdmin?: boolean;
   mockAfnic: boolean;
   environment?: 'sandbox' | 'production';
   environmentLabel?: string;
+  extranetBaseUrl?: string;
 }
 
 export interface AuthResponse {
   authenticated: boolean;
   user?: UserProfile;
+  isAdmin?: boolean;
   mockAfnic: boolean;
+  environment?: 'sandbox' | 'production';
+  environmentLabel?: string;
+  extranetBaseUrl?: string;
 }

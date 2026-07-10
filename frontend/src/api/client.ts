@@ -62,6 +62,19 @@ export async function logout(): Promise<void> {
   await parseJson(response);
 }
 
+export async function setAfnicEnvironment(
+  environment: 'sandbox' | 'production',
+): Promise<AuthStatusResponse> {
+  const response = await fetch('/api/auth/environment', {
+    ...fetchOptions,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ environment }),
+  });
+
+  return parseJson<AuthStatusResponse>(response);
+}
+
 export async function checkDomains(names: string[]): Promise<DomainCheckResponse> {
   const response = await fetch('/api/domains/check', {
     ...fetchOptions,

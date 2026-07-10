@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { isAdminEmail } from '../auth/admin.js';
 import { pool } from '../db/pool.js';
 import type { PublicUserProfile, RegisterUserInput, StoredUser } from './types.js';
 
@@ -6,6 +7,7 @@ interface UserRow {
   id: string;
   email: string;
   password_hash: string;
+  is_admin: boolean;
   contact_kind: 'physical' | 'moral';
   afnic_client_id: string;
   contact_name: string;
@@ -29,6 +31,7 @@ function mapRow(row: UserRow): StoredUser {
     id: row.id,
     email: row.email,
     passwordHash: row.password_hash,
+    isAdmin: row.is_admin,
     contactKind: row.contact_kind,
     afnicClientId: row.afnic_client_id,
     contactName: row.contact_name,
@@ -54,6 +57,7 @@ export function toPublicProfile(user: StoredUser): PublicUserProfile {
   return {
     id: user.id,
     email: user.email,
+    isAdmin: user.isAdmin,
     contactKind: user.contactKind,
     afnicClientId: user.afnicClientId,
     contactName: user.contactName,
@@ -61,6 +65,21 @@ export function toPublicProfile(user: StoredUser): PublicUserProfile {
     organizationName: user.organizationName,
     createdAt: user.createdAt,
   };
+}
+
+export async function syncAdminStatus(user: StoredUser): Promise<StoredUser> {
+  const shouldBeAdmin = isAdminEmail(user.email);
+
+  if (shouldBeAdmin === user.isAdmin) {
+    return user;
+  }
+
+  const result = await pool.query<UserRow>(
+    'UPDATE users SET is_admin = $1 WHERE id = $2 RETURNING *',
+    [shouldBeAdmin, user.id],
+  );
+
+  return mapRow(result.rows[0]);
 }
 
 export async function findUserByEmail(email: string): Promise<StoredUser | null> {
@@ -83,25 +102,27 @@ export async function createUser(
 ): Promise<StoredUser> {
   const normalizedEmail = input.email.trim().toLowerCase();
   const id = randomUUID();
+  const isAdmin = isAdminEmail(normalizedEmail);
 
   try {
     const result = await pool.query<UserRow>(
       `INSERT INTO users (
-        id, email, password_hash, contact_kind, afnic_client_id, contact_name,
+        id, email, password_hash, is_admin, contact_kind, afnic_client_id, contact_name,
         first_name, organization_name, legal_status, siren_siret, phone, contact_email,
         address_first_street, address_second_street, address_complementary_street,
         address_city_name, address_postal_code, address_country_code
       ) VALUES (
-        $1, $2, $3, $4, $5, $6,
-        $7, $8, $9, $10, $11, $12,
-        $13, $14, $15,
-        $16, $17, $18
+        $1, $2, $3, $4, $5, $6, $7,
+        $8, $9, $10, $11, $12, $13,
+        $14, $15, $16,
+        $17, $18, $19
       )
       RETURNING *`,
       [
         id,
         normalizedEmail,
         passwordHash,
+        isAdmin,
         input.contactKind,
         afnicClientId,
         input.contactName.trim(),

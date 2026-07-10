@@ -1,31 +1,7 @@
 import { config } from '../config.js';
-import { requestAccessTokenFromEnv } from '../auth/tokenService.js';
+import type { AfnicRuntime } from './runtime.js';
+import { getAccessTokenForEnvironment } from './tokenCache.js';
 import type { AfnicDomainCheckResponse } from './types.js';
-
-interface TokenCache {
-  accessToken: string;
-  expiresAt: number;
-}
-
-let envTokenCache: TokenCache | null = null;
-
-async function getEnvAccessToken(): Promise<string> {
-  if (envTokenCache && Date.now() < envTokenCache.expiresAt) {
-    return envTokenCache.accessToken;
-  }
-
-  const token = await requestAccessTokenFromEnv();
-  envTokenCache = {
-    accessToken: token.accessToken,
-    expiresAt: token.expiresAt - 30_000,
-  };
-
-  return envTokenCache.accessToken;
-}
-
-export function clearEnvTokenCache(): void {
-  envTokenCache = null;
-}
 
 function mockCheck(names: string[]): AfnicDomainCheckResponse {
   return {
@@ -48,9 +24,10 @@ function mockCheck(names: string[]): AfnicDomainCheckResponse {
 
 async function callDomainCheck(
   names: string[],
+  runtime: AfnicRuntime,
   accessToken: string,
 ): Promise<AfnicDomainCheckResponse> {
-  const response = await fetch(`${config.afnicApiBaseUrl}/v1/domains/check`, {
+  const response = await fetch(`${runtime.apiBaseUrl}/v1/domains/check`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -74,14 +51,13 @@ async function callDomainCheck(
 
 export async function checkDomainsWithAfnic(
   names: string[],
-  accessToken?: string,
+  runtime: AfnicRuntime,
 ): Promise<AfnicDomainCheckResponse> {
   if (config.mockAfnic) {
     await new Promise((resolve) => setTimeout(resolve, 200));
     return mockCheck(names);
   }
 
-  const token = accessToken ?? (await getEnvAccessToken());
-
-  return callDomainCheck(names, token);
+  const token = await getAccessTokenForEnvironment(runtime.environment);
+  return callDomainCheck(names, runtime, token);
 }

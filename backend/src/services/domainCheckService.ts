@@ -1,4 +1,5 @@
 import { checkDomainsWithAfnic } from '../afnic/client.js';
+import type { AfnicRuntime } from '../afnic/runtime.js';
 import type { DomainCheckResponse, DomainCheckResult } from '../afnic/types.js';
 import { config } from '../config.js';
 import type { NormalizedDomain, InvalidDomain } from '../utils/normalizeDomains.js';
@@ -24,7 +25,7 @@ function invalidToResults(invalid: InvalidDomain[]): DomainCheckResult[] {
 
 async function checkChunk(
   domains: NormalizedDomain[],
-  accessToken?: string,
+  runtime: AfnicRuntime,
 ): Promise<DomainCheckResult[]> {
   const names = domains.map((domain) => domain.name);
 
@@ -34,7 +35,7 @@ async function checkChunk(
     );
   }
 
-  const afnicResponse = await checkDomainsWithAfnic(names, accessToken);
+  const afnicResponse = await checkDomainsWithAfnic(names, runtime);
   const availabilityByName = new Map(
     (afnicResponse.response ?? []).map((item) => [item.name.toLowerCase(), item]),
   );
@@ -63,13 +64,13 @@ async function checkChunk(
 export async function runDomainChecks(
   domains: NormalizedDomain[],
   invalid: InvalidDomain[] = [],
-  accessToken?: string,
+  runtime: AfnicRuntime,
 ): Promise<DomainCheckResponse> {
   const chunks = chunkArray(domains, config.chunkSize);
   const results: DomainCheckResult[] = [...invalidToResults(invalid)];
 
   for (const chunk of chunks) {
-    const chunkResults = await checkChunk(chunk, accessToken);
+    const chunkResults = await checkChunk(chunk, runtime);
     results.push(...chunkResults);
   }
 

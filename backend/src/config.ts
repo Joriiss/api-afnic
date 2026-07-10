@@ -14,6 +14,15 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 const afnicEnvironment = resolveAfnicEnvironment(process.env.AFNIC_ENV);
 const environmentProfile = AFNIC_ENVIRONMENTS[afnicEnvironment];
 
+function parseAdminEmails(): Set<string> {
+  return new Set(
+    (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((email) => email.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
 export const AFNIC_MAX_DOMAIN_CHECK = 7;
 
 export const config = {
@@ -38,6 +47,7 @@ export const config = {
   sessionCookieSecure: process.env.SESSION_COOKIE_SECURE === 'true',
   databaseUrl:
     process.env.DATABASE_URL ?? 'postgres://afnic:afnic@localhost:5432/afnic',
+  adminEmails: parseAdminEmails(),
 };
 
 export type { AfnicEnvironment };

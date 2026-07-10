@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { requireAuth } from '../auth/session.js';
+import { getAfnicRuntimeForRequest, requireAuth } from '../auth/session.js';
 import { runDomainChecks } from '../services/domainCheckService.js';
 import { normalizeDomainNames } from '../utils/normalizeDomains.js';
 import { parseDomainsFromCsv } from '../utils/parseCsv.js';
@@ -24,7 +24,8 @@ domainsRouter.post('/check', async (req, res) => {
     }
 
     const normalized = normalizeDomainNames(names.map(String));
-    const response = await runDomainChecks(normalized.valid, normalized.invalid);
+    const runtime = getAfnicRuntimeForRequest(req);
+    const response = await runDomainChecks(normalized.valid, normalized.invalid, runtime);
     res.json(response);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Échec de la vérification des domaines';
@@ -45,7 +46,8 @@ domainsRouter.post('/check/csv', upload.single('file'), async (req, res) => {
 
     const content = req.file.buffer.toString('utf-8');
     const parsed = parseDomainsFromCsv(content);
-    const response = await runDomainChecks(parsed.domains, parsed.invalid);
+    const runtime = getAfnicRuntimeForRequest(req);
+    const response = await runDomainChecks(parsed.domains, parsed.invalid, runtime);
 
     res.json({
       ...response,

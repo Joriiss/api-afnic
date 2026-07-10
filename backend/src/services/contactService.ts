@@ -1,5 +1,7 @@
 import type { AfnicContactCreatePayload } from '../afnic/contactTypes.js';
 import { createContactWithAfnic } from '../afnic/contacts.js';
+import { resolveAfnicRuntime } from '../afnic/runtime.js';
+import { config } from '../config.js';
 import type { RegisterUserInput } from '../users/types.js';
 
 function formatPhoneNumber(phone: string): string {
@@ -74,7 +76,8 @@ export function buildAfnicContactPayload(input: RegisterUserInput): AfnicContact
 
 export async function registerContactWithAfnic(input: RegisterUserInput): Promise<string> {
   const payload = buildAfnicContactPayload(input);
-  const response = await createContactWithAfnic(payload);
+  const runtime = resolveAfnicRuntime(config.afnicEnvironment);
+  const response = await createContactWithAfnic(payload, runtime);
 
   if (!response.clientId) {
     throw new Error('AFNIC n’a pas renvoyé d’identifiant de contact');

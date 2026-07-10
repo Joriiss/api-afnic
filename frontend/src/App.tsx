@@ -7,6 +7,7 @@ import {
   login,
   logout,
   register,
+  setAfnicEnvironment,
 } from './api/client';
 import { CsvUpload } from './components/CsvUpload';
 import { LoginForm } from './components/LoginForm';
@@ -14,6 +15,7 @@ import { RegisterForm } from './components/RegisterForm';
 import { ResultsTable } from './components/ResultsTable';
 import { SearchInput } from './components/SearchInput';
 import { Win98DesktopIcons } from './components/Win98DesktopIcons';
+import { Win98EnvironmentSwitcher } from './components/Win98EnvironmentSwitcher';
 import { Win98Icon } from './components/Win98Icon';
 import { Win98Marquee } from './components/Win98Marquee';
 import { Win98Taskbar } from './components/Win98Taskbar';
@@ -45,16 +47,17 @@ export default function App() {
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [authStatus, setAuthStatus] = useState<AuthStatusResponse | null>(null);
   const [mockMode, setMockMode] = useState(false);
-  const [environmentLabel, setEnvironmentLabel] = useState('Sandbox');
-  const [extranetBaseUrl, setExtranetBaseUrl] = useState('');
+  const [envSwitchLoading, setEnvSwitchLoading] = useState(false);
+
+  const environmentLabel = authStatus?.environmentLabel ?? 'Sandbox';
+  const extranetBaseUrl = authStatus?.extranetBaseUrl ?? '';
+  const afnicEnvironment = authStatus?.environment ?? 'sandbox';
 
   useEffect(() => {
     async function loadInitialState() {
       try {
         const [health, status] = await Promise.all([fetchHealth(), fetchAuthStatus()]);
         setMockMode(health.mockAfnic);
-        setEnvironmentLabel(health.environmentLabel);
-        setExtranetBaseUrl(health.extranetBaseUrl);
         setAuthStatus(status);
       } catch {
         setError(
@@ -70,20 +73,17 @@ export default function App() {
 
   const isAuthenticated = Boolean(authStatus?.authenticated);
 
+  function applyAuthResponse(response: AuthStatusResponse) {
+    setAuthStatus(response);
+  }
+
   async function handleLogin(email: string, password: string) {
     setLoginLoading(true);
     setLoginError(null);
 
     try {
       const response = await login(email, password);
-      setAuthStatus({
-        authenticated: true,
-        email: response.user?.email,
-        contactName: response.user?.contactName,
-        afnicClientId: response.user?.afnicClientId,
-        mockAfnic: response.mockAfnic,
-        environmentLabel,
-      });
+      applyAuthResponse(response);
       setError(null);
     } catch (err) {
       setLoginError(err instanceof Error ? err.message : 'Échec de la connexion');
@@ -98,19 +98,28 @@ export default function App() {
 
     try {
       const response = await register(payload);
-      setAuthStatus({
-        authenticated: true,
-        email: response.user?.email,
-        contactName: response.user?.contactName,
-        afnicClientId: response.user?.afnicClientId,
-        mockAfnic: response.mockAfnic,
-        environmentLabel,
-      });
+      applyAuthResponse(response);
       setError(null);
     } catch (err) {
       setRegisterError(err instanceof Error ? err.message : 'Échec de l’inscription');
     } finally {
       setRegisterLoading(false);
+    }
+  }
+
+  async function handleEnvironmentChange(environment: 'sandbox' | 'production') {
+    setEnvSwitchLoading(true);
+    setError(null);
+
+    try {
+      const response = await setAfnicEnvironment(environment);
+      applyAuthResponse(response);
+      setResults([]);
+      setMeta(undefined);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Impossible de changer d’environnement');
+    } finally {
+      setEnvSwitchLoading(false);
     }
   }
 
@@ -269,7 +278,17 @@ export default function App() {
                       {environmentLabel}
                     </span>
                   )}
+                  {authStatus?.isAdmin && !mockMode && (
+                    <Win98EnvironmentSwitcher
+                      environment={afnicEnvironment}
+                      loading={envSwitchLoading}
+                      onChange={(environment) => void handleEnvironmentChange(environment)}
+                    />
+                  )}
                   {mockMode && <span className="win98-status-badge win98-status-badge-warn">Mode simulation</span>}
+                  {authStatus?.isAdmin && (
+                    <span className="win98-status-badge">Admin</span>
+                  )}
                   <button className="win98-button" type="button" onClick={() => void handleLogout()}>
                     Se déconnecter
                   </button>

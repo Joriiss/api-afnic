@@ -6,6 +6,7 @@ export interface StoredUser {
   id: string;
   email: string;
   passwordHash: string;
+  isAdmin: boolean;
   contactKind: ContactKind;
   afnicClientId: string;
   contactName: string;
@@ -50,6 +51,7 @@ export interface RegisterUserInput {
 export interface PublicUserProfile {
   id: string;
   email: string;
+  isAdmin: boolean;
   contactKind: ContactKind;
   afnicClientId: string;
   contactName: string;

@@ -18,6 +18,7 @@ export const DEFAULT_AFNIC_CLIENT_ID = 'registrars-api-client';
 
 export async function requestAccessToken(
   credentials: TokenRequestCredentials,
+  tokenUrl: string = config.keycloakTokenUrl,
 ): Promise<TokenResponse> {
   const body = new URLSearchParams({
     grant_type: 'password',
@@ -31,7 +32,7 @@ export async function requestAccessToken(
     body.set('client_secret', clientSecret);
   }
 
-  const response = await fetch(config.keycloakTokenUrl, {
+  const response = await fetch(tokenUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
@@ -51,13 +52,18 @@ export async function requestAccessToken(
   };
 }
 
-export async function requestAccessTokenFromEnv(): Promise<TokenResponse> {
+export async function requestAccessTokenFromEnv(
+  tokenUrl: string = config.keycloakTokenUrl,
+): Promise<TokenResponse> {
   if (!config.keycloakUsername || !config.keycloakPassword) {
     throw new Error('Missing KEYCLOAK_USERNAME or KEYCLOAK_PASSWORD in environment');
   }
 
-  return requestAccessToken({
-    username: config.keycloakUsername,
-    password: config.keycloakPassword,
-  });
+  return requestAccessToken(
+    {
+      username: config.keycloakUsername,
+      password: config.keycloakPassword,
+    },
+    tokenUrl,
+  );
 }

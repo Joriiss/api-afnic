@@ -1,25 +1,40 @@
 import { Router } from 'express';
-import { clearSessionUser, getSessionUser } from '../auth/session.js';
+import { resolveAfnicRuntime } from '../afnic/runtime.js';
+import {
+  buildSessionUser,
+  clearSessionUser,
+  getAfnicRuntimeForRequest,
+  getSessionUser,
+  requireAdmin,
+  requireAuth,
+} from '../auth/session.js';
 import { config } from '../config.js';
+import { resolveAfnicEnvironment } from '../config/environments.js';
 import { registerContactWithAfnic } from '../services/contactService.js';
 import { hashPassword, verifyPassword } from '../users/password.js';
-import { createUser, findUserByEmail, toPublicProfile } from '../users/store.js';
+import { createUser, findUserByEmail, syncAdminStatus, toPublicProfile } from '../users/store.js';
 import { validateRegisterInput } from '../users/validation.js';
 
-export const authRouter = Router();
+function buildAuthPayload(req: Parameters<typeof getSessionUser>[0], user = getSessionUser(req)) {
+  const runtime = user ? getAfnicRuntimeForRequest(req) : resolveAfnicRuntime(config.afnicEnvironment);
 
-authRouter.get('/status', (req, res) => {
-  const user = getSessionUser(req);
-
-  res.json({
+  return {
     authenticated: Boolean(user),
     email: user?.email,
     contactName: user?.contactName,
     afnicClientId: user?.afnicClientId,
+    isAdmin: user?.isAdmin ?? false,
     mockAfnic: config.mockAfnic,
-    environment: config.afnicEnvironment,
-    environmentLabel: config.afnicEnvironmentLabel,
-  });
+    environment: runtime.environment,
+    environmentLabel: runtime.environmentLabel,
+    extranetBaseUrl: runtime.extranetBaseUrl,
+  };
+}
+
+export const authRouter = Router();
+
+authRouter.get('/status', (req, res) => {
+  res.json(buildAuthPayload(req));
 });
 
 authRouter.post('/register', async (req, res) => {
@@ -36,17 +51,11 @@ authRouter.post('/register', async (req, res) => {
     const passwordHash = hashPassword(input.password);
     const user = await createUser(input, passwordHash, afnicClientId);
 
-    req.session.user = {
-      userId: user.id,
-      email: user.email,
-      afnicClientId: user.afnicClientId,
-      contactName: user.contactName,
-    };
+    req.session.user = buildSessionUser(user);
 
     res.status(201).json({
-      authenticated: true,
+      ...buildAuthPayload(req, req.session.user),
       user: toPublicProfile(user),
-      mockAfnic: config.mockAfnic,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Échec de l’inscription';
@@ -65,29 +74,40 @@ authRouter.post('/login', async (req, res) => {
       return;
     }
 
-    const user = await findUserByEmail(email);
+    const foundUser = await findUserByEmail(email);
 
-    if (!user || !verifyPassword(password, user.passwordHash)) {
+    if (!foundUser || !verifyPassword(password, foundUser.passwordHash)) {
       res.status(401).json({ error: 'E-mail ou mot de passe incorrect' });
       return;
     }
 
-    req.session.user = {
-      userId: user.id,
-      email: user.email,
-      afnicClientId: user.afnicClientId,
-      contactName: user.contactName,
-    };
+    const user = await syncAdminStatus(foundUser);
+    req.session.user = buildSessionUser(user);
 
     res.json({
-      authenticated: true,
+      ...buildAuthPayload(req, req.session.user),
       user: toPublicProfile(user),
-      mockAfnic: config.mockAfnic,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Échec de la connexion';
     res.status(500).json({ error: message });
   }
+});
+
+authRouter.post('/environment', requireAuth, requireAdmin, (req, res) => {
+  const environment = resolveAfnicEnvironment(String(req.body?.environment ?? ''));
+
+  if (!req.session.user) {
+    res.status(401).json({ error: 'Session invalide' });
+    return;
+  }
+
+  req.session.user = {
+    ...req.session.user,
+    afnicEnvironment: environment,
+  };
+
+  res.json(buildAuthPayload(req, req.session.user));
 });
 
 authRouter.post('/logout', (req, res) => {
