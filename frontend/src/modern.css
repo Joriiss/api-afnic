@@ -275,6 +275,51 @@
   color: var(--ui-muted);
 }
 
+/* Admin settings menu */
+
+[data-theme='modern'] .admin-settings {
+  position: relative;
+}
+
+[data-theme='modern'] .admin-settings-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  z-index: 20;
+  width: min(20rem, calc(100vw - 2rem));
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius);
+  background: var(--ui-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+[data-theme='modern'] .admin-settings-section + .admin-settings-section {
+  border-top: 1px solid var(--ui-border);
+  padding-top: 0.75rem;
+}
+
+[data-theme='modern'] .admin-settings-heading {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+[data-theme='modern'] .admin-settings-hint {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--ui-muted);
+}
+
+[data-theme='modern'] .admin-settings-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 /* Forms */
 
 [data-theme='modern'] .panel-header h2 {

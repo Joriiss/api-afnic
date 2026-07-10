@@ -11,7 +11,7 @@ import {
   setAfnicEnvironment,
 } from './api/client';
 import { CsvUpload } from './components/CsvUpload';
-import { EnvironmentSwitcher } from './components/EnvironmentSwitcher';
+import { AdminSettingsMenu } from './components/AdminSettingsMenu';
 import { LoginForm } from './components/LoginForm';
 import {
   ModernCenteredPage,
@@ -21,7 +21,6 @@ import {
 import { RegisterForm } from './components/RegisterForm';
 import { ResultsTable } from './components/ResultsTable';
 import { SearchInput } from './components/SearchInput';
-import { ThemeToggle } from './components/ThemeToggle';
 import { Badge } from './components/ui/Badge';
 import { Button } from './components/ui/Button';
 import { Panel } from './components/ui/Panel';
@@ -519,21 +518,15 @@ export default function App() {
               <Win98Window title="AFNIC Domain Checker v1.0 (Shareware)" icon="internet">
                 <div className="win98-hero-layout">
                   <div className="win98-hero-actions">
-                    {!mockMode && (
-                      <Badge tone={environmentLabel === 'Production' ? 'danger' : 'default'}>
-                        {environmentLabel}
-                      </Badge>
-                    )}
-                    {authStatus?.isAdmin && !mockMode && (
-                      <EnvironmentSwitcher
-                        environment={afnicEnvironment}
-                        loading={envSwitchLoading}
-                        onChange={(environment) => void handleEnvironmentChange(environment)}
-                      />
-                    )}
                     {mockMode && <Badge tone="warn">Mode simulation</Badge>}
-                    {authStatus?.isAdmin && <Badge>Admin</Badge>}
-                    <ThemeToggle />
+                    <AdminSettingsMenu
+                      isAdmin={authStatus?.isAdmin}
+                      mockMode={mockMode}
+                      environment={afnicEnvironment}
+                      environmentLabel={environmentLabel}
+                      envSwitchLoading={envSwitchLoading}
+                      onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+                    />
                     <Button type="button" onClick={() => void handleLogout()}>
                       Se déconnecter
                     </Button>

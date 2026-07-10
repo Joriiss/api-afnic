@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
+import { AdminSettingsMenu } from '../AdminSettingsMenu';
 import { Badge } from '../ui/Badge';
-import { EnvironmentSwitcher } from '../EnvironmentSwitcher';
-import { ThemeToggle } from '../ThemeToggle';
 import { Button } from '../ui/Button';
 
 interface ModernHeaderProps {
@@ -41,21 +40,16 @@ export function ModernHeader({
 
         {showAuthActions && (
           <div className="modern-header-actions">
-            {!mockMode && (
-              <Badge tone={environmentLabel === 'Production' ? 'danger' : 'default'}>
-                {environmentLabel}
-              </Badge>
-            )}
             {mockMode && <Badge tone="warn">Mode simulation</Badge>}
             {isAdmin && <Badge>Admin</Badge>}
-            {isAdmin && !mockMode && onEnvironmentChange && (
-              <EnvironmentSwitcher
-                environment={afnicEnvironment}
-                loading={envSwitchLoading}
-                onChange={onEnvironmentChange}
-              />
-            )}
-            <ThemeToggle />
+            <AdminSettingsMenu
+              isAdmin={isAdmin}
+              mockMode={mockMode}
+              environment={afnicEnvironment}
+              environmentLabel={environmentLabel}
+              envSwitchLoading={envSwitchLoading}
+              onEnvironmentChange={onEnvironmentChange}
+            />
             {userLabel && <span className="modern-user">{userLabel}</span>}
             {onLogout && (
               <Button type="button" variant="default" onClick={onLogout}>
