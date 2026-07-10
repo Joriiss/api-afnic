@@ -279,6 +279,10 @@
   min-width: 0;
 }
 
+.win98-hero .win98-window-body {
+  overflow: visible;
+}
+
 /* ── Buttons ── */
 
 .win98-button {
@@ -422,6 +426,9 @@ tbody tr:hover .win98-button-compact {
 
 .win98-hero {
   width: 100%;
+  position: relative;
+  z-index: 5;
+  overflow: visible;
 }
 
 .win98-hero-centered {
@@ -508,6 +515,13 @@ tbody tr:hover .win98-button-compact {
   align-items: center;
   justify-content: flex-end;
   max-width: 100%;
+}
+
+.win98-app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
 
 .win98-status-badge {
@@ -898,37 +912,41 @@ tbody tr:hover .win98-button-compact {
   white-space: nowrap;
 }
 
-.user-account-dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  z-index: 30;
-  min-width: 140px;
-  border: 2px outset var(--win98-light);
-  background: var(--win98-silver);
+[data-theme='win98'] .user-account-dropdown {
+  z-index: 10060;
+  min-width: 11rem;
   padding: 2px;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 2px 0 var(--win98-dark);
+  background: var(--win98-gray);
+  border: 2px solid;
+  border-color: var(--win98-white) var(--win98-black) var(--win98-black) var(--win98-white);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
-.user-account-item {
+[data-theme='win98'] .user-account-dropdown-floating {
+  position: fixed;
+}
+
+[data-theme='win98'] .user-account-item {
   border: 0;
-  background: transparent;
+  background: var(--win98-gray);
   text-align: left;
   padding: 4px 12px;
   font: inherit;
   font-size: 11px;
   cursor: pointer;
+  white-space: nowrap;
+  color: var(--win98-black);
 }
 
-.user-account-item:hover,
-.user-account-item.is-active {
+[data-theme='win98'] .user-account-item:hover,
+[data-theme='win98'] .user-account-item.is-active {
   background: var(--win98-navy);
   color: var(--win98-white);
 }
 
-.user-account-divider {
+[data-theme='win98'] .user-account-divider {
   height: 1px;
   margin: 2px 4px;
   background: var(--win98-dark);

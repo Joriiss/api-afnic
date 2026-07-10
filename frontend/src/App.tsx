@@ -14,6 +14,7 @@ import { DomainSearchBar } from './components/DomainSearchBar';
 import { MyDomainsPage } from './components/MyDomainsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { UserAccountMenu, type AppView } from './components/UserAccountMenu';
+import { Win98AppNav } from './components/Win98AppNav';
 import { LoginForm } from './components/LoginForm';
 import {
   ModernCenteredPage,
@@ -466,6 +467,7 @@ export default function App() {
           environmentLabel={environmentLabel}
           envSwitchLoading={envSwitchLoading}
           onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+          onClose={() => setAppView('search')}
         />
       );
     }
@@ -505,6 +507,7 @@ export default function App() {
         environmentLabel={environmentLabel}
         envSwitchLoading={envSwitchLoading}
         onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+        onClose={() => setAppView('search')}
       />
     ) : (
       searchWorkspace
@@ -653,6 +656,11 @@ export default function App() {
                 <div className="win98-hero-layout">
                   <div className="win98-hero-actions">
                     {mockMode && <Badge tone="warn">Mode simulation</Badge>}
+                    <Win98AppNav
+                      currentView={appView}
+                      isAdmin={authStatus?.isAdmin}
+                      onNavigate={setAppView}
+                    />
                     <UserAccountMenu
                       userLabel={userLabel}
                       isAdmin={authStatus?.isAdmin}

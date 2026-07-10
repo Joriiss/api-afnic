@@ -541,6 +541,12 @@
   position: relative;
 }
 
+[data-theme='modern'] .user-account-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+}
+
 [data-theme='modern'] .user-account-trigger {
   display: inline-flex;
   align-items: center;
@@ -584,6 +590,7 @@
   font-size: 0.875rem;
   color: var(--ui-fg);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 [data-theme='modern'] .user-account-item:hover,

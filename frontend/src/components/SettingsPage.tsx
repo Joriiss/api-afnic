@@ -9,6 +9,7 @@ interface SettingsPageProps {
   environmentLabel: string;
   envSwitchLoading?: boolean;
   onEnvironmentChange?: (environment: 'sandbox' | 'production') => void;
+  onClose?: () => void;
 }
 
 export function SettingsPage({
@@ -17,6 +18,7 @@ export function SettingsPage({
   environmentLabel,
   envSwitchLoading,
   onEnvironmentChange,
+  onClose,
 }: SettingsPageProps) {
   const { theme, setTheme } = useTheme();
 
@@ -34,7 +36,12 @@ export function SettingsPage({
 
   if (theme === 'win98') {
     return (
-      <Win98Window title="Paramètres administrateur" icon="settings" className="settings-page-window">
+      <Win98Window
+        title="Paramètres administrateur"
+        icon="settings"
+        className="settings-page-window"
+        onClose={onClose}
+      >
         {content}
       </Win98Window>
     );
