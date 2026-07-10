@@ -28,11 +28,11 @@ export function Win98Window({
         </span>
         <span className="win98-titlebar-text">{title}</span>
         <div className="win98-titlebar-buttons">
-          <button type="button" className="win98-chrome-btn" aria-label="Réduire">
-            _
+          <button type="button" className="win98-chrome-btn win98-chrome-btn-min" aria-label="Réduire">
+            <span className="win98-chrome-glyph" aria-hidden="true" />
           </button>
-          <button type="button" className="win98-chrome-btn" aria-label="Agrandir">
-            □
+          <button type="button" className="win98-chrome-btn win98-chrome-btn-max" aria-label="Agrandir">
+            <span className="win98-chrome-glyph" aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -41,7 +41,9 @@ export function Win98Window({
             onClick={onClose}
             disabled={!onClose}
           >
-            ×
+            <span className="win98-chrome-glyph" aria-hidden="true">
+              ×
+            </span>
           </button>
         </div>
       </div>
