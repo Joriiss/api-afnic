@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import { Panel } from './ui/Panel';
 import { Button } from './ui/Button';
 
@@ -11,6 +12,7 @@ interface LoginFormProps {
 }
 
 export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMode }: LoginFormProps) {
+  const { theme } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -24,11 +26,17 @@ export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMod
       <div className="panel-header">
         <h2>Connexion</h2>
         <fieldset className="win98-fieldset">
-          <legend>Accès client</legend>
-          <p>Connectez-vous pour vérifier la disponibilité des domaines `.fr`.</p>
+          <legend>{theme === 'win98' ? 'Accès client' : 'Connexion'}</legend>
+          <p>
+            {theme === 'win98'
+              ? 'Connectez-vous pour vérifier la disponibilité des domaines `.fr`.'
+              : 'Connectez-vous pour rechercher et réserver vos noms de domaine.'}
+          </p>
           {mockMode && (
             <p className="login-hint">
-              Mode simulation : l&apos;inscription crée un contact fictif et les vérifications sont simulées.
+              {theme === 'win98'
+                ? "Mode simulation : l'inscription crée un contact fictif et les vérifications sont simulées."
+                : 'Mode démonstration : les résultats sont fictifs et aucun domaine réel ne sera réservé.'}
             </p>
           )}
         </fieldset>
@@ -69,7 +77,7 @@ export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMod
           <Button variant="primary" type="submit" disabled={loading || !email || !password}>
             {loading ? 'Connexion…' : 'Se connecter'}
           </Button>
-          <Button type="button" disabled={loading} onClick={onSwitchToRegister}>
+          <Button type="button" variant="outline" disabled={loading} onClick={onSwitchToRegister}>
             Créer un compte
           </Button>
         </div>

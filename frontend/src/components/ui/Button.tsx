@@ -1,7 +1,7 @@
 import type { ButtonHTMLAttributes } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
-type ButtonVariant = 'default' | 'primary' | 'danger' | 'compact';
+type ButtonVariant = 'default' | 'primary' | 'outline' | 'danger' | 'compact';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -23,7 +23,9 @@ export function Button({ variant = 'default', className = '', ...props }: Button
     return <button className={`win98-button ${win98Variant} ${className}`.trim()} {...props} />;
   }
 
+  const modernVariant = variant === 'default' ? '' : `ui-button-${variant}`;
+
   return (
-    <button className={`ui-button ui-button-${variant} ${className}`.trim()} {...props} />
+    <button className={`ui-button ${modernVariant} ${className}`.trim()} {...props} />
   );
 }

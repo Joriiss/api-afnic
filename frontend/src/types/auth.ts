@@ -39,6 +39,7 @@ export interface AuthStatusResponse {
   authenticated: boolean;
   email?: string;
   contactName?: string;
+  firstName?: string;
   afnicClientId?: string;
   isAdmin?: boolean;
   mockAfnic: boolean;

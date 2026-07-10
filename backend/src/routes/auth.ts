@@ -22,6 +22,7 @@ function buildAuthPayload(req: Parameters<typeof getSessionUser>[0], user = getS
     authenticated: Boolean(user),
     email: user?.email,
     contactName: user?.contactName,
+    firstName: user?.firstName,
     afnicClientId: user?.afnicClientId,
     isAdmin: user?.isAdmin ?? false,
     mockAfnic: config.mockAfnic,

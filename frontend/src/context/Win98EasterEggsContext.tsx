@@ -221,18 +221,18 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
       )}
 
       {showHelp && (
-        <Win98Window floating title="Aide sur AFNIC Check 98" icon="window" className="win98-start-dialog" onClose={() => setShowHelp(false)}>
+        <Win98Window floating title="Aide sur Registrar Studio218" icon="window" className="win98-start-dialog" onClose={() => setShowHelp(false)}>
           <div className="win98-message-box">
             <Win98Icon name="window" size={32} />
             <div>
               <p>
-                <strong>AFNIC Check 98</strong> — version 1.0 (shareware)
+                <strong>Registrar Studio218</strong> — version 1.0 (shareware)
               </p>
               <p>
                 Utilisez le menu Démarrer ou le bureau pour lancer les programmes. Vérifiez vos domaines `.fr` via
                 l&apos;API Phoenix AFNIC.
               </p>
-              <p className="win98-dialog-fine-print">© 1998 AFNIC. Tous droits réservés.</p>
+              <p className="win98-dialog-fine-print">© Studio218. Tous droits réservés.</p>
             </div>
           </div>
           <div className="win98-form-actions">
@@ -248,7 +248,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
           <p className="win98-dialog-label">Tapez le nom d&apos;un programme, d&apos;un dossier ou d&apos;un document, puis cliquez sur OK.</p>
           <label className="win98-run-field">
             <span>Ouvrir :</span>
-            <input type="text" defaultValue="C:\Program Files\AFNIC\check.exe" />
+            <input type="text" defaultValue="C:\Program Files\Studio218\registrar.exe" />
           </label>
           <div className="win98-form-actions">
             <button className="win98-button win98-button-primary" type="button" onClick={() => setShowRun(false)}>
@@ -272,7 +272,7 @@ export function Win98EasterEggsProvider({ variant, children }: Win98EasterEggsPr
             <select defaultValue="documents">
               <option value="documents">Mes documents</option>
               <option value="c">Disque local (C:)</option>
-              <option value="afnic">AFNIC CD-ROM (D:)</option>
+              <option value="afnic">Studio218 CD-ROM (D:)</option>
             </select>
           </label>
           <div className="win98-form-actions">

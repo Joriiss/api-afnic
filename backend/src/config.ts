@@ -23,12 +23,34 @@ function parseAdminEmails(): Set<string> {
   );
 }
 
+function parseEnvInt(
+  value: string | undefined,
+  fallback: number,
+  options?: { min?: number; max?: number },
+): number {
+  const parsed = Number.parseInt(String(value ?? '').trim(), 10);
+
+  if (!Number.isFinite(parsed)) {
+    return fallback;
+  }
+
+  if (options?.min !== undefined && parsed < options.min) {
+    return fallback;
+  }
+
+  if (options?.max !== undefined && parsed > options.max) {
+    return options.max;
+  }
+
+  return parsed;
+}
+
 export const AFNIC_MAX_DOMAIN_CHECK = 7;
 
 export const config = {
   afnicEnvironment,
   afnicEnvironmentLabel: environmentProfile.label,
-  port: Number(process.env.PORT ?? 3001),
+  port: parseEnvInt(process.env.PORT, 3001, { min: 1 }),
   afnicApiBaseUrl: process.env.AFNIC_API_BASE_URL ?? environmentProfile.apiBaseUrl,
   keycloakTokenUrl: process.env.KEYCLOAK_TOKEN_URL ?? environmentProfile.tokenUrl,
   extranetBaseUrl: process.env.EXTRANET_BASE_URL ?? environmentProfile.extranetBaseUrl,
@@ -38,7 +60,7 @@ export const config = {
   keycloakPassword: process.env.KEYCLOAK_PASSWORD ?? '',
   mockAfnic: process.env.MOCK_AFNIC === 'true',
   chunkSize: Math.min(
-    Number(process.env.DOMAIN_CHECK_CHUNK_SIZE ?? AFNIC_MAX_DOMAIN_CHECK),
+    parseEnvInt(process.env.DOMAIN_CHECK_CHUNK_SIZE, AFNIC_MAX_DOMAIN_CHECK, { min: 1 }),
     AFNIC_MAX_DOMAIN_CHECK,
   ),
   autoAppendFrSuffix: process.env.AUTO_APPEND_FR_SUFFIX !== 'false',
@@ -52,7 +74,7 @@ export const config = {
     process.env.DATABASE_URL ?? 'postgres://afnic:afnic@localhost:5432/afnic',
   adminEmails: parseAdminEmails(),
   afnicDefaultAdminContactId: process.env.AFNIC_DEFAULT_ADMIN_CONTACT_ID ?? 'CTC1607933',
-  defaultDomainDurationYears: Number(process.env.DEFAULT_DOMAIN_DURATION_YEARS ?? 1),
+  defaultDomainDurationYears: parseEnvInt(process.env.DEFAULT_DOMAIN_DURATION_YEARS, 1, { min: 1 }),
 };
 
 export type { AfnicEnvironment };

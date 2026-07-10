@@ -13,7 +13,7 @@ interface AdminSettingsMenuProps {
   onEnvironmentChange?: (environment: 'sandbox' | 'production') => void;
 }
 
-function AdminSettingsContent({
+export function AdminSettingsContent({
   theme,
   setTheme,
   mockMode,
@@ -179,15 +179,15 @@ export function AdminSettingsMenu({
   return (
     <>
       <div className="admin-settings" ref={triggerRef}>
-        <Button
-          type="button"
-          variant="default"
-          aria-expanded={open}
-          aria-haspopup="menu"
-          onClick={() => setOpen((current) => !current)}
-        >
-          Paramètres
-        </Button>
+      <Button
+        type="button"
+        variant="outline"
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen((current) => !current)}
+      >
+        Paramètres
+      </Button>
         {theme === 'modern' && panel}
       </div>
       {theme === 'win98' && panel}

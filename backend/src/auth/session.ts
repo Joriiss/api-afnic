@@ -19,6 +19,7 @@ export function buildSessionUser(user: StoredUser, environment?: AfnicEnvironmen
     email: user.email,
     afnicClientId: user.afnicClientId,
     contactName: user.contactName,
+    firstName: user.firstName,
     isAdmin: user.isAdmin,
     afnicEnvironment,
   };

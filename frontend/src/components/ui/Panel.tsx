@@ -9,9 +9,17 @@ interface PanelProps {
   className?: string;
   icon?: Win98IconName;
   onClose?: () => void;
+  accent?: boolean;
 }
 
-export function Panel({ title, children, className = '', icon = 'folder', onClose }: PanelProps) {
+export function Panel({
+  title,
+  children,
+  className = '',
+  icon = 'folder',
+  onClose,
+  accent = false,
+}: PanelProps) {
   const { theme } = useTheme();
 
   if (theme === 'win98') {
@@ -22,8 +30,10 @@ export function Panel({ title, children, className = '', icon = 'folder', onClos
     );
   }
 
+  const accentClass = accent ? 'ui-panel-accent' : '';
+
   return (
-    <section className={`ui-panel ${className}`.trim()}>
+    <section className={`ui-panel ${accentClass} ${className}`.trim()}>
       <header className="ui-panel-header">
         <h2 className="ui-panel-title">{title}</h2>
       </header>

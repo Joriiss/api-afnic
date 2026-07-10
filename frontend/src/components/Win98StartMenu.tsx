@@ -134,7 +134,7 @@ export function Win98StartMenu({ open, onClose, onLogout, isAuthenticated, ancho
                   }
                 >
                   <Win98Icon name="internet" size={16} />
-                  AFNIC Domain Checker
+                  Registrar Studio218
                 </button>
                 <button
                   type="button"

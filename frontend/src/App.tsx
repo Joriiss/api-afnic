@@ -10,8 +10,10 @@ import {
   registerDomain,
   setAfnicEnvironment,
 } from './api/client';
-import { CsvUpload } from './components/CsvUpload';
-import { AdminSettingsMenu } from './components/AdminSettingsMenu';
+import { DomainSearchBar } from './components/DomainSearchBar';
+import { MyDomainsPage } from './components/MyDomainsPage';
+import { SettingsPage } from './components/SettingsPage';
+import { UserAccountMenu, type AppView } from './components/UserAccountMenu';
 import { LoginForm } from './components/LoginForm';
 import {
   ModernCenteredPage,
@@ -20,7 +22,6 @@ import {
 } from './components/layouts/ModernLayout';
 import { RegisterForm } from './components/RegisterForm';
 import { ResultsTable } from './components/ResultsTable';
-import { SearchInput } from './components/SearchInput';
 import { Badge } from './components/ui/Badge';
 import { Button } from './components/ui/Button';
 import { Panel } from './components/ui/Panel';
@@ -50,37 +51,120 @@ function splitSearchInput(value: string): string[] {
 }
 
 function RegisterSuccessAlert({
-  data,
+  results,
   onDismiss,
 }: {
-  data: DomainRegisterResponse;
+  results: DomainRegisterResponse[];
   onDismiss: () => void;
 }) {
   const { theme } = useTheme();
+  const isBulk = results.length > 1;
+  const isModern = theme === 'modern';
 
-  if (theme === 'win98') {
-    return (
-      <Win98Window title="Domaine enregistré" icon="document" className="win98-success-window">
-        <div className="win98-message-box">
-          <Win98Icon name="document" size={32} />
-          <div>
+  const content = isModern ? (
+    <div>
+      {isBulk ? (
+        <p>
+          <strong>{results.length}</strong> domaines ont été réservés avec succès.
+        </p>
+      ) : (
+        <p>
+          <strong>{results[0]?.domain}</strong> est maintenant réservé à votre nom.
+        </p>
+      )}
+
+      {isBulk ? (
+        <div className="register-success-list">
+          {results.map((item) => (
+            <div key={item.domain} className="register-success-item">
+              <p>
+                <strong>{item.domain}</strong>
+              </p>
+              <p>
+                Code de transfert : <code className="win98-auth-info">{item.authInfo}</code>
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        results[0] && (
+          <p>
+            Conservez ce code de transfert en lieu sûr :{' '}
+            <code className="win98-auth-info">{results[0].authInfo}</code>
+          </p>
+        )
+      )}
+
+      <p className="register-success-meta">
+        Durée de réservation : {results[0]?.durationYears} an
+        {(results[0]?.durationYears ?? 0) > 1 ? 's' : ''}.
+      </p>
+    </div>
+  ) : (
+    <div>
+      {isBulk ? (
+        <p>
+          <strong>{results.length}</strong> domaines enregistrés ({results[0]?.environment}).
+        </p>
+      ) : (
+        <p>
+          <strong>{results[0]?.domain}</strong> a été enregistré ({results[0]?.environment}).
+        </p>
+      )}
+
+      {isBulk ? (
+        <div className="register-success-list">
+          {results.map((item) => (
+            <div key={item.domain} className="register-success-item">
+              <p>
+                <strong>{item.domain}</strong>
+              </p>
+              <p>
+                Auth-Info : <code className="win98-auth-info">{item.authInfo}</code>
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        results[0] && (
+          <>
             <p>
-              <strong>{data.domain}</strong> a été enregistré ({data.environment}).
+              Titulaire : <code>{results[0].registrantClientId}</code>
             </p>
             <p>
-              Titulaire : <code>{data.registrantClientId}</code>
+              Contacts admin/tech : <code>{results[0].adminContactClientId}</code>
             </p>
             <p>
-              Contacts admin/tech : <code>{data.adminContactClientId}</code>
-            </p>
-            <p>
-              Durée : {data.durationYears} an{data.durationYears > 1 ? 's' : ''}
+              Durée : {results[0].durationYears} an{results[0].durationYears > 1 ? 's' : ''}
             </p>
             <p>
               Auth-Info (conservez ce mot de passe de transfert) :{' '}
-              <code className="win98-auth-info">{data.authInfo}</code>
+              <code className="win98-auth-info">{results[0].authInfo}</code>
             </p>
-          </div>
+          </>
+        )
+      )}
+
+      {isBulk && results[0] && (
+        <p className="register-success-meta">
+          Titulaire : <code>{results[0].registrantClientId}</code> · Contacts admin/tech :{' '}
+          <code>{results[0].adminContactClientId}</code> · Durée : {results[0].durationYears} an
+          {results[0].durationYears > 1 ? 's' : ''}
+        </p>
+      )}
+    </div>
+  );
+
+  if (theme === 'win98') {
+    return (
+      <Win98Window
+        title={isBulk ? 'Domaines enregistrés' : 'Domaine enregistré'}
+        icon="document"
+        className="win98-success-window"
+      >
+        <div className="win98-message-box">
+          <Win98Icon name="document" size={32} />
+          {content}
         </div>
         <Button variant="primary" type="button" onClick={onDismiss}>
           OK
@@ -91,22 +175,7 @@ function RegisterSuccessAlert({
 
   return (
     <section className="ui-alert ui-alert-success">
-      <p>
-        <strong>{data.domain}</strong> a été enregistré ({data.environment}).
-      </p>
-      <p>
-        Titulaire : <code>{data.registrantClientId}</code>
-      </p>
-      <p>
-        Contacts admin/tech : <code>{data.adminContactClientId}</code>
-      </p>
-      <p>
-        Durée : {data.durationYears} an{data.durationYears > 1 ? 's' : ''}
-      </p>
-      <p>
-        Auth-Info (conservez ce mot de passe de transfert) :{' '}
-        <code className="win98-auth-info">{data.authInfo}</code>
-      </p>
+      {content}
       <div className="ui-alert-actions">
         <Button variant="primary" type="button" onClick={onDismiss}>
           Fermer
@@ -162,8 +231,10 @@ export default function App() {
   const [authStatus, setAuthStatus] = useState<AuthStatusResponse | null>(null);
   const [mockMode, setMockMode] = useState(false);
   const [envSwitchLoading, setEnvSwitchLoading] = useState(false);
-  const [registeringDomain, setRegisteringDomain] = useState<string | null>(null);
-  const [registerSuccess, setRegisterSuccess] = useState<DomainRegisterResponse | null>(null);
+  const [registeringDomains, setRegisteringDomains] = useState<string[]>([]);
+  const [registerSuccess, setRegisterSuccess] = useState<DomainRegisterResponse[]>([]);
+  const [appView, setAppView] = useState<AppView>('search');
+  const [domainsRefreshKey, setDomainsRefreshKey] = useState(0);
 
   const environmentLabel = authStatus?.environmentLabel ?? 'Sandbox';
   const afnicEnvironment = authStatus?.environment ?? 'sandbox';
@@ -180,7 +251,7 @@ export default function App() {
         setAuthStatus(status);
       } catch {
         setError(
-          'Le serveur backend est inaccessible. Lancez-le avec `docker compose up -d app`, puis ouvrez http://localhost:5173 ou http://localhost:3001.',
+          'Le service est momentanément indisponible. Réessayez dans quelques instants.',
         );
       } finally {
         setAuthLoading(false);
@@ -249,6 +320,7 @@ export default function App() {
       setResults([]);
       setMeta(undefined);
       setError(null);
+      setAppView('search');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Échec de la déconnexion');
     }
@@ -268,7 +340,7 @@ export default function App() {
 
       if (/connexion|auth/i.test(message)) {
         setAuthStatus((current) =>
-          current ? { ...current, authenticated: false, email: undefined, contactName: undefined } : current,
+          current ? { ...current, authenticated: false, email: undefined, contactName: undefined, firstName: undefined } : current,
         );
       }
     } finally {
@@ -276,21 +348,19 @@ export default function App() {
     }
   }
 
-  function handleSearchSubmit() {
+  function handleDomainSearchSubmit() {
+    if (csvFile) {
+      void runCheck(() => checkDomainsFromCsv(csvFile));
+      return;
+    }
+
     const names = splitSearchInput(searchValue);
+
     if (names.length === 0) {
       return;
     }
 
     void runCheck(() => checkDomains(names));
-  }
-
-  function handleCsvSubmit() {
-    if (!csvFile) {
-      return;
-    }
-
-    void runCheck(() => checkDomainsFromCsv(csvFile));
   }
 
   function handleExport() {
@@ -304,61 +374,141 @@ export default function App() {
     setError(null);
   }
 
-  async function handleRegisterDomain(domain: string) {
-    setRegisteringDomain(domain);
+  async function handleRegisterDomains(domains: string[]) {
+    if (domains.length === 0) {
+      return;
+    }
+
+    setRegisteringDomains(domains);
     setError(null);
 
-    try {
-      const response = await registerDomain(domain);
-      setRegisterSuccess(response);
-      setResults((current) =>
-        current.map((result) =>
-          result.name.toLowerCase() === domain.toLowerCase()
-            ? { ...result, available: false, reason: 'IN_USE' }
-            : result,
-        ),
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Échec de l'enregistrement du domaine");
-    } finally {
-      setRegisteringDomain(null);
+    const successes: DomainRegisterResponse[] = [];
+    const failures: string[] = [];
+
+    for (const domain of domains) {
+      try {
+        const response = await registerDomain(domain);
+        successes.push(response);
+        setResults((current) =>
+          current.map((result) =>
+            result.name.toLowerCase() === domain.toLowerCase()
+              ? { ...result, available: false, reason: 'IN_USE' }
+              : result,
+          ),
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Échec de l'enregistrement";
+        failures.push(`${domain} : ${message}`);
+      }
     }
+
+    if (successes.length > 0) {
+      setRegisterSuccess(successes);
+      setDomainsRefreshKey((current) => current + 1);
+    }
+
+    if (failures.length > 0) {
+      setError(failures.join(' · '));
+    }
+
+    setRegisteringDomains([]);
   }
 
-  const workspace = (
+  const userLabel =
+    authStatus?.firstName ?? authStatus?.contactName ?? authStatus?.email ?? 'Mon compte';
+
+  const searchWorkspace = (
     <>
-      {registerSuccess && (
-        <RegisterSuccessAlert data={registerSuccess} onDismiss={() => setRegisterSuccess(null)} />
+      {registerSuccess.length > 0 && (
+        <RegisterSuccessAlert results={registerSuccess} onDismiss={() => setRegisterSuccess([])} />
       )}
 
       {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
 
-      <main className={theme === 'win98' ? 'win98-content-grid' : 'modern-content-grid'}>
-        <SearchInput
-          value={searchValue}
-          onChange={setSearchValue}
-          onSubmit={handleSearchSubmit}
+      <section className={theme === 'win98' ? 'win98-search-section' : 'modern-search-section'}>
+        <DomainSearchBar
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
+          csvFile={csvFile}
+          onCsvFileChange={setCsvFile}
+          onSubmit={handleDomainSearchSubmit}
           disabled={loading}
         />
-        <CsvUpload
-          file={csvFile}
-          onFileChange={setCsvFile}
-          onSubmit={handleCsvSubmit}
-          disabled={loading}
-        />
-      </main>
+      </section>
 
       <ResultsTable
         results={results}
         meta={meta}
         loading={loading}
-        registeringDomain={registeringDomain}
-        onRegister={handleRegisterDomain}
+        registeringDomains={registeringDomains}
+        onRegisterDomains={handleRegisterDomains}
         onExport={handleExport}
         onClear={handleClear}
       />
     </>
   );
+
+  function renderAuthenticatedContent() {
+    if (appView === 'domains') {
+      return (
+        <MyDomainsPage
+          refreshKey={domainsRefreshKey}
+          onSearchDomains={() => setAppView('search')}
+        />
+      );
+    }
+
+    if (appView === 'settings') {
+      return (
+        <SettingsPage
+          mockMode={mockMode}
+          environment={afnicEnvironment}
+          environmentLabel={environmentLabel}
+          envSwitchLoading={envSwitchLoading}
+          onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+        />
+      );
+    }
+
+    return (
+      <>
+        <section className="modern-hero-band modern-hero">
+          <h1>Trouvez votre nom de domaine</h1>
+          <p>Saisissez un nom, vérifiez s&apos;il est libre et réservez-le en quelques clics.</p>
+        </section>
+        {searchWorkspace}
+      </>
+    );
+  }
+
+  const win98HeroTitle =
+    appView === 'domains'
+      ? 'Mes domaines'
+      : appView === 'settings'
+        ? 'Paramètres administrateur'
+        : 'Vérification de disponibilité';
+
+  const win98HeroCopy =
+    appView === 'domains'
+      ? 'Consultez les domaines enregistrés sur votre compte.'
+      : appView === 'settings'
+        ? 'Configuration réservée aux administrateurs.'
+        : "Vérifiez si des noms de domaine `.fr` sont disponibles à l'enregistrement via l'API AFNIC Phoenix.";
+
+  const win98MainContent =
+    appView === 'domains' ? (
+      <MyDomainsPage refreshKey={domainsRefreshKey} onSearchDomains={() => setAppView('search')} />
+    ) : appView === 'settings' ? (
+      <SettingsPage
+        mockMode={mockMode}
+        environment={afnicEnvironment}
+        environmentLabel={environmentLabel}
+        envSwitchLoading={envSwitchLoading}
+        onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+      />
+    ) : (
+      searchWorkspace
+    );
 
   if (authLoading) {
     if (theme === 'modern') {
@@ -367,7 +517,7 @@ export default function App() {
           <Panel title="Chargement">
             <div className="modern-loading">
               <span className="modern-spinner" aria-hidden="true" />
-              <span>Initialisation de l&apos;application…</span>
+              <span>Chargement…</span>
             </div>
           </Panel>
         </ModernCenteredPage>
@@ -380,7 +530,7 @@ export default function App() {
           <Win98DesktopIcons />
           <div className="win98-workspace">
             <div className="win98-workspace-inner">
-              <Win98Window title="AFNIC Check — Chargement…" icon="hourglass" className="win98-window-centered">
+              <Win98Window title="Registrar Studio218 — Chargement…" icon="hourglass" className="win98-window-centered">
                 <div className="win98-message-box">
                   <Win98Icon name="hourglass" size={32} className="win98-hourglass" />
                   <p>Patientez pendant l&apos;initialisation du système…</p>
@@ -426,19 +576,17 @@ export default function App() {
           header={
             <ModernHeader
               showAuthActions={false}
-              environmentLabel={environmentLabel}
-              afnicEnvironment={afnicEnvironment}
               mockMode={mockMode}
               isAdmin={authStatus?.isAdmin}
             />
           }
         >
           <div className="modern-auth-stack">
-            <section className="modern-hero">
-              <h1>Vérification de disponibilité</h1>
+            <section className="modern-hero-band modern-hero">
+              <h1>Réservez votre domaine .fr</h1>
               <p>
-                Créez un compte client pour vérifier la disponibilité des domaines `.fr`. Vos
-                informations sont enregistrées comme contact AFNIC.
+                Créez un compte pour vérifier si un nom est disponible et le réserver en ligne avec
+                Studio 218.
               </p>
             </section>
             {error && <ErrorAlert message={error} onDismiss={() => setError(null)} />}
@@ -455,8 +603,8 @@ export default function App() {
           <div className="win98-workspace">
             <div className="win98-workspace-inner">
               <header className="win98-hero win98-hero-centered">
-                <Win98Window title="Bienvenue sur AFNIC Check 98" icon="window">
-                  <Win98Marquee text="Bienvenue sur AFNIC Check 98 — Le meilleur logiciel de vérification de domaines .fr de 1998 !!!" />
+                <Win98Window title="Bienvenue sur Registrar Studio218" icon="window">
+                  <Win98Marquee text="Bienvenue sur Registrar Studio218 — Le meilleur logiciel de vérification de domaines .fr de 1998 !!!" />
                   <h1 className="win98-hero-title">Vérification de disponibilité</h1>
                   <p className="win98-hero-copy">
                     Créez un compte client pour vérifier la disponibilité des domaines `.fr`. Vos informations
@@ -480,30 +628,16 @@ export default function App() {
       <ModernPage
         header={
           <ModernHeader
-            userLabel={authStatus?.contactName ?? authStatus?.email}
-            environmentLabel={environmentLabel}
-            afnicEnvironment={afnicEnvironment}
+            userLabel={userLabel}
             mockMode={mockMode}
             isAdmin={authStatus?.isAdmin}
-            envSwitchLoading={envSwitchLoading}
-            onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+            currentView={appView}
+            onNavigate={setAppView}
             onLogout={() => void handleLogout()}
           />
         }
       >
-        <section className="modern-hero">
-          <h1>Vérification de disponibilité</h1>
-          <p>
-            Vérifiez si des noms de domaine `.fr` sont disponibles à l&apos;enregistrement via
-            l&apos;API AFNIC Phoenix.
-          </p>
-          {authStatus?.afnicClientId && (
-            <p>
-              Contact AFNIC : <code>{authStatus.afnicClientId}</code>
-            </p>
-          )}
-        </section>
-        {workspace}
+        {renderAuthenticatedContent()}
       </ModernPage>
     );
   }
@@ -515,21 +649,17 @@ export default function App() {
         <div className="win98-workspace">
           <div className="win98-workspace-inner">
             <header className="win98-hero">
-              <Win98Window title="AFNIC Domain Checker v1.0 (Shareware)" icon="internet">
+              <Win98Window title="Registrar Studio218 v1.0 (Shareware)" icon="internet">
                 <div className="win98-hero-layout">
                   <div className="win98-hero-actions">
                     {mockMode && <Badge tone="warn">Mode simulation</Badge>}
-                    <AdminSettingsMenu
+                    <UserAccountMenu
+                      userLabel={userLabel}
                       isAdmin={authStatus?.isAdmin}
-                      mockMode={mockMode}
-                      environment={afnicEnvironment}
-                      environmentLabel={environmentLabel}
-                      envSwitchLoading={envSwitchLoading}
-                      onEnvironmentChange={(environment) => void handleEnvironmentChange(environment)}
+                      currentView={appView}
+                      onNavigate={setAppView}
+                      onLogout={() => void handleLogout()}
                     />
-                    <Button type="button" onClick={() => void handleLogout()}>
-                      Se déconnecter
-                    </Button>
                   </div>
 
                   <Win98Marquee
@@ -539,15 +669,12 @@ export default function App() {
                         : 'Vérification de domaines .fr'
                     }
                   />
-                  <h1 className="win98-hero-title">Vérification de disponibilité</h1>
-                  <p className="win98-hero-copy">
-                    Vérifiez si des noms de domaine `.fr` sont disponibles à l&apos;enregistrement via
-                    l&apos;API AFNIC Phoenix.
-                  </p>
+                  <h1 className="win98-hero-title">{win98HeroTitle}</h1>
+                  <p className="win98-hero-copy">{win98HeroCopy}</p>
                 </div>
               </Win98Window>
             </header>
-            {workspace}
+            {win98MainContent}
           </div>
         </div>
         <Win98Taskbar

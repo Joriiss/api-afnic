@@ -30,9 +30,13 @@ export function getDomainRegisterUrl(extranetBaseUrl: string, domain: string): s
   return `${base}/en/search?${params.toString()}`;
 }
 
-export function formatAvailability(available: boolean | null): string {
+export function formatAvailability(available: boolean | null, consumer = false): string {
   if (available === null) {
-    return 'Erreur';
+    return consumer ? 'Indisponible' : 'Erreur';
+  }
+
+  if (consumer) {
+    return available ? 'Libre' : 'Déjà pris';
   }
 
   return available ? 'Oui' : 'Non';

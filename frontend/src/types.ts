@@ -30,6 +30,20 @@ export interface DomainRegisterResponse {
   expirationDate?: string;
 }
 
+export interface DomainRegistrationItem {
+  id: string;
+  domain: string;
+  authInfo: string;
+  durationYears: number;
+  registeredAt: string;
+  expirationDate?: string;
+  status: 'active' | 'cancelled' | 'unknown';
+}
+
+export interface DomainRegistrationsResponse {
+  registrations: DomainRegistrationItem[];
+}
+
 export interface HealthResponse {
   status: string;
   mockAfnic: boolean;

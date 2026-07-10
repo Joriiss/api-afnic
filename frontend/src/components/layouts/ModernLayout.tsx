@@ -1,60 +1,55 @@
 import type { ReactNode } from 'react';
-import { AdminSettingsMenu } from '../AdminSettingsMenu';
 import { Badge } from '../ui/Badge';
-import { Button } from '../ui/Button';
+import { UserAccountMenu, type AppView } from '../UserAccountMenu';
 
 interface ModernHeaderProps {
   title?: string;
   subtitle?: string;
   userLabel?: string;
-  environmentLabel: string;
-  afnicEnvironment: 'sandbox' | 'production';
   mockMode: boolean;
   isAdmin?: boolean;
-  envSwitchLoading?: boolean;
-  onEnvironmentChange?: (environment: 'sandbox' | 'production') => void;
+  currentView?: AppView;
+  onNavigate?: (view: AppView) => void;
   onLogout?: () => void;
   showAuthActions?: boolean;
 }
 
 export function ModernHeader({
-  title = 'AFNIC Domain Check',
-  subtitle = 'Vérification et enregistrement de domaines .fr',
+  title = 'Studio 218',
+  subtitle = 'Noms de domaine .fr',
   userLabel,
-  environmentLabel,
-  afnicEnvironment,
   mockMode,
   isAdmin,
-  envSwitchLoading,
-  onEnvironmentChange,
+  currentView,
+  onNavigate,
   onLogout,
   showAuthActions = true,
 }: ModernHeaderProps) {
   return (
     <header className="modern-header">
       <div className="modern-header-inner">
-        <div className="modern-brand">
+        <button
+          type="button"
+          className="modern-brand modern-brand-button"
+          onClick={() => onNavigate?.('search')}
+          disabled={!onNavigate}
+        >
           <p className="modern-brand-title">{title}</p>
           <p className="modern-brand-subtitle">{subtitle}</p>
-        </div>
+        </button>
 
         {showAuthActions && (
           <div className="modern-header-actions">
-            {mockMode && <Badge tone="warn">Mode simulation</Badge>}
+            {mockMode && <Badge tone="warn">Démonstration</Badge>}
             {isAdmin && <Badge>Admin</Badge>}
-            <AdminSettingsMenu
-              isAdmin={isAdmin}
-              mockMode={mockMode}
-              environment={afnicEnvironment}
-              environmentLabel={environmentLabel}
-              envSwitchLoading={envSwitchLoading}
-              onEnvironmentChange={onEnvironmentChange}
-            />
-            {userLabel && <span className="modern-user">{userLabel}</span>}
-            {onLogout && (
-              <Button type="button" variant="default" onClick={onLogout}>
-                Se déconnecter
-              </Button>
+            {userLabel && onNavigate && onLogout && (
+              <UserAccountMenu
+                userLabel={userLabel}
+                isAdmin={isAdmin}
+                currentView={currentView}
+                onNavigate={onNavigate}
+                onLogout={onLogout}
+              />
             )}
           </div>
         )}

@@ -1,4 +1,4 @@
-# Domain Eligibility Lookup Platform
+# Registrar Studio218
 
 Web platform to check whether `.fr` domain names are available for registration using the [AFNIC Phoenix API](https://api-sandbox.nic.fr/api-docs/).
 

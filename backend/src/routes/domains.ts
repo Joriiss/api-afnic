@@ -3,6 +3,8 @@ import multer from 'multer';
 import { getAfnicRuntimeForRequest, getSessionUser, requireAuth } from '../auth/session.js';
 import { runDomainChecks } from '../services/domainCheckService.js';
 import { registerDomainForUser } from '../services/domainRegisterService.js';
+import { listDomainRegistrationsByUserId } from '../registrations/store.js';
+import { resolveRegistrationStatuses } from '../services/domainRegistrationStatusService.js';
 import { normalizeDomainNames } from '../utils/normalizeDomains.js';
 import { parseDomainsFromCsv } from '../utils/parseCsv.js';
 
@@ -14,6 +16,36 @@ const upload = multer({
 export const domainsRouter = Router();
 
 domainsRouter.use(requireAuth);
+
+domainsRouter.get('/registrations', async (req, res) => {
+  try {
+    const sessionUser = getSessionUser(req);
+
+    if (!sessionUser) {
+      res.status(401).json({ error: 'Connexion requise' });
+      return;
+    }
+
+    const registrations = await listDomainRegistrationsByUserId(sessionUser.userId);
+    const statuses = await resolveRegistrationStatuses(registrations);
+
+    res.json({
+      registrations: registrations.map((item) => ({
+        id: item.id,
+        domain: item.domainName,
+        authInfo: item.authInfo,
+        durationYears: item.durationYears,
+        registeredAt: item.createdAt,
+        expirationDate: item.afnicExpirationDate,
+        status: statuses.get(item.id) ?? 'unknown',
+      })),
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Impossible de charger vos domaines';
+    res.status(500).json({ error: message });
+  }
+});
 
 domainsRouter.post('/check', async (req, res) => {
   try {

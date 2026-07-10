@@ -79,3 +79,16 @@ export async function saveDomainRegistration(input: {
 
   return mapRow(result.rows[0]);
 }
+
+export async function listDomainRegistrationsByUserId(
+  userId: string,
+): Promise<StoredDomainRegistration[]> {
+  const result = await pool.query<RegistrationRow>(
+    `SELECT * FROM domain_registrations
+     WHERE user_id = $1
+     ORDER BY created_at DESC`,
+    [userId],
+  );
+
+  return result.rows.map(mapRow);
+}

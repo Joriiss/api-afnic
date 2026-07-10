@@ -1,4 +1,5 @@
 import { config } from '../config.js';
+import { fetchWithTimeout } from '../utils/fetchError.js';
 import type { AfnicRuntime } from './runtime.js';
 import { getAccessTokenForEnvironment } from './tokenCache.js';
 import type { AfnicDomainCheckResponse } from './types.js';
@@ -27,7 +28,7 @@ async function callDomainCheck(
   runtime: AfnicRuntime,
   accessToken: string,
 ): Promise<AfnicDomainCheckResponse> {
-  const response = await fetch(`${runtime.apiBaseUrl}/v1/domains/check`, {
+  const response = await fetchWithTimeout(`${runtime.apiBaseUrl}/v1/domains/check`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${accessToken}`,

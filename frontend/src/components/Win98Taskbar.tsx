@@ -49,7 +49,7 @@ export function Win98Taskbar({
       </div>
 
       <div className="win98-taskbar-apps">
-        <span className="win98-taskbar-app win98-taskbar-app-active">AFNIC Check.exe</span>
+        <span className="win98-taskbar-app win98-taskbar-app-active">Registrar Studio218.exe</span>
         {mockMode && <span className="win98-taskbar-app">Simulateur.exe</span>}
       </div>
 

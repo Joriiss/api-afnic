@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { ContactKind, MoralLegalStatus, RegisterRequest } from '../types';
+import { useTheme } from '../context/ThemeContext';
 import { Panel } from './ui/Panel';
 import { Button } from './ui/Button';
 
@@ -36,6 +37,7 @@ export function RegisterForm({
   error,
   mockMode,
 }: RegisterFormProps) {
+  const { theme } = useTheme();
   const [form, setForm] = useState(EMPTY_FORM);
 
   function updateField<K extends keyof typeof EMPTY_FORM>(key: K, value: (typeof EMPTY_FORM)[K]) {
@@ -71,13 +73,18 @@ export function RegisterForm({
       <div className="panel-header">
         <h2>Créer un compte</h2>
         <fieldset className="win98-fieldset">
-          <legend>Informations obligatoires</legend>
+          <legend>{theme === 'win98' ? 'Informations obligatoires' : 'Vos coordonnées'}</legend>
           <p>
-            Vos informations seront enregistrées comme contact AFNIC pour pouvoir vérifier et enregistrer des
-            domaines.
+            {theme === 'win98'
+              ? 'Vos informations seront enregistrées comme contact AFNIC pour pouvoir vérifier et enregistrer des domaines.'
+              : 'Ces informations sont nécessaires pour réserver un nom de domaine à votre nom.'}
           </p>
           {mockMode && (
-            <p className="login-hint">Mode simulation : aucun contact réel n&apos;est créé chez AFNIC.</p>
+            <p className="login-hint">
+              {theme === 'win98'
+                ? "Mode simulation : aucun contact réel n'est créé chez AFNIC."
+                : 'Mode démonstration : aucun domaine réel ne sera réservé.'}
+            </p>
           )}
         </fieldset>
       </div>
@@ -85,7 +92,7 @@ export function RegisterForm({
       <form className="register-form" onSubmit={(event) => void handleSubmit(event)}>
         <div className="register-grid">
           <label className="field">
-            <span>E-mail de connexion :</span>
+            <span>{theme === 'win98' ? 'E-mail de connexion :' : 'E-mail'}</span>
             <input
               type="email"
               autoComplete="email"
@@ -96,7 +103,7 @@ export function RegisterForm({
           </label>
 
           <label className="field">
-            <span>Mot de passe :</span>
+            <span>{theme === 'win98' ? 'Mot de passe :' : 'Mot de passe'}</span>
             <input
               type="password"
               autoComplete="new-password"
@@ -107,7 +114,7 @@ export function RegisterForm({
           </label>
 
           <label className="field">
-            <span>Type de contact :</span>
+            <span>{theme === 'win98' ? 'Type de contact :' : 'Vous êtes'}</span>
             <select
               value={form.contactKind}
               onChange={(event) => updateField('contactKind', event.target.value as ContactKind)}
@@ -238,7 +245,7 @@ export function RegisterForm({
           <Button variant="primary" type="submit" disabled={loading}>
             {loading ? 'Inscription…' : 'Créer mon compte'}
           </Button>
-          <Button type="button" disabled={loading} onClick={onSwitchToLogin}>
+          <Button type="button" variant="outline" disabled={loading} onClick={onSwitchToLogin}>
             J&apos;ai déjà un compte
           </Button>
         </div>

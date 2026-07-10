@@ -5,10 +5,11 @@ import { config } from '../config.js';
 import type { NormalizedDomain, InvalidDomain } from '../utils/normalizeDomains.js';
 
 function chunkArray<T>(items: T[], size: number): T[][] {
+  const chunkSize = Number.isFinite(size) && size > 0 ? Math.floor(size) : 1;
   const chunks: T[][] = [];
 
-  for (let index = 0; index < items.length; index += size) {
-    chunks.push(items.slice(index, index + size));
+  for (let index = 0; index < items.length; index += chunkSize) {
+    chunks.push(items.slice(index, index + chunkSize));
   }
 
   return chunks;

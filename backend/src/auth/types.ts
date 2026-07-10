@@ -5,6 +5,7 @@ export interface SessionUser {
   email: string;
   afnicClientId: string;
   contactName: string;
+  firstName?: string;
   isAdmin: boolean;
   afnicEnvironment: AfnicEnvironment;
 }

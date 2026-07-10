@@ -6,6 +6,11 @@ html[data-theme='modern'] {
   color-scheme: light;
 }
 
+html[data-theme='modern'] ::selection {
+  background: #22afca;
+  color: #ffffff;
+}
+
 body {
   margin: 0;
   min-width: 320px;

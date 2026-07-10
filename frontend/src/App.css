@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════
-   AFNIC Check 98 — Authentic Windows 98 Vibes
+   Registrar Studio218 — Authentic Windows 98 Vibes
    ═══════════════════════════════════════════ */
 
 [data-theme='win98'] {
@@ -529,6 +529,81 @@ tbody tr:hover .win98-button-compact {
   color: var(--win98-black);
 }
 
+.win98-search-section {
+  width: 100%;
+}
+
+.domain-search-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.domain-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.domain-search-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  padding: 3px 6px;
+  background: var(--win98-white);
+  color: var(--win98-black);
+  border: 2px solid;
+  border-color: var(--win98-dark) var(--win98-white) var(--win98-white) var(--win98-dark);
+  box-shadow: inset 1px 1px 0 var(--win98-black);
+  font-family: var(--win98-mono);
+  font-size: 11px;
+}
+
+.domain-search-file-input {
+  display: none;
+}
+
+.domain-search-attach {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.domain-search-file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 2px 6px;
+  background: var(--win98-white);
+  border: 1px solid var(--win98-dark);
+  font-size: 11px;
+}
+
+.domain-search-file-name {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.domain-search-file-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--win98-black);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.domain-search-file-remove:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
 .win98-content-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -743,6 +818,138 @@ tbody tr:hover .win98-button-compact {
 
 .results-panel {
   width: 100%;
+}
+
+.results-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.results-filters-label {
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.results-filter-btn {
+  min-width: auto;
+}
+
+.results-empty-filter {
+  margin: 0 0 8px;
+  font-size: 11px;
+}
+
+.results-select-col {
+  width: 28px;
+  text-align: center;
+}
+
+.results-checkbox {
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+}
+
+.results-checkbox:disabled {
+  cursor: default;
+}
+
+.register-success-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.register-success-item {
+  padding: 6px;
+  border: 1px inset var(--win98-dark);
+  background: var(--win98-white);
+}
+
+.register-success-item p {
+  margin: 0 0 4px;
+}
+
+.register-success-meta {
+  margin: 8px 0 0;
+  font-size: 10px;
+}
+
+.user-account-menu {
+  position: relative;
+}
+
+.user-account-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 200px;
+}
+
+.user-account-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-account-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 30;
+  min-width: 140px;
+  border: 2px outset var(--win98-light);
+  background: var(--win98-silver);
+  padding: 2px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 2px 0 var(--win98-dark);
+}
+
+.user-account-item {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 4px 12px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.user-account-item:hover,
+.user-account-item.is-active {
+  background: var(--win98-navy);
+  color: var(--win98-white);
+}
+
+.user-account-divider {
+  height: 1px;
+  margin: 2px 4px;
+  background: var(--win98-dark);
+}
+
+.my-domains-empty-action {
+  margin-top: 8px;
+}
+
+.my-domains-sync-hint {
+  margin: 4px 0 0;
+  font-size: 10px;
+  text-align: center;
+}
+
+.my-domains-row-cancelled td {
+  color: var(--win98-dark);
+}
+
+.my-domains-row-cancelled strong {
+  text-decoration: line-through;
 }
 
 .results-header {

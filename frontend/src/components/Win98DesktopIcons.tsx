@@ -40,7 +40,7 @@ export function Win98DesktopIcons() {
         <>
           <DesktopIcon icon="document" label="domaines.csv" />
           <DesktopIcon icon="envelope" label="Outlook" />
-          <DesktopIcon icon="cdrom" label="AFNIC CD-ROM" />
+          <DesktopIcon icon="cdrom" label="Studio218 CD-ROM" />
         </>
       )}
 
