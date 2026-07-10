@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: afnic
+      POSTGRES_PASSWORD: afnic
+      POSTGRES_DB: afnic
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U afnic -d afnic']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      PORT: 3001
+      DATABASE_URL: postgres://afnic:afnic@db:5432/afnic
+      FRONTEND_ORIGIN: http://localhost:3001
+      SESSION_COOKIE_SECURE: 'false'
+      MOCK_AFNIC: ${MOCK_AFNIC:-true}
+      AFNIC_ENV: ${AFNIC_ENV:-sandbox}
+      KEYCLOAK_USERNAME: ${KEYCLOAK_USERNAME:-}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD:-}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-registrars-api-client}
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-in-production}
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

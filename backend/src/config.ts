@@ -36,6 +36,8 @@ export const config = {
   sessionSecret: process.env.SESSION_SECRET ?? 'dev-session-secret-change-me',
   frontendOrigin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',
   sessionCookieSecure: process.env.SESSION_COOKIE_SECURE === 'true',
+  databaseUrl:
+    process.env.DATABASE_URL ?? 'postgres://afnic:afnic@localhost:5432/afnic',
 };
 
 export type { AfnicEnvironment };

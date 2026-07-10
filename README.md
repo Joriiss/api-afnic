@@ -20,7 +20,8 @@ Web platform to check whether `.fr` domain names are available for registration 
 ## Prerequisites
 
 - Node.js 20+
-- AFNIC sandbox Keycloak credentials (or use mock mode)
+- Docker (recommended) or PostgreSQL 16+
+- AFNIC registrar credentials in `.env` for real API calls (or use mock mode)
 
 ## Setup
 
@@ -30,7 +31,13 @@ Web platform to check whether `.fr` domain names are available for registration 
 cp .env.example .env
 ```
 
-2. Install dependencies:
+2. Start PostgreSQL:
+
+```bash
+npm run docker:db
+```
+
+3. Install dependencies:
 
 ```bash
 npm install
@@ -38,15 +45,11 @@ npm install --prefix backend
 npm install --prefix frontend
 ```
 
-3. Configure `.env`:
+4. Configure `.env`:
 
-- For local UI testing without AFNIC credentials, keep `MOCK_AFNIC=true`
-- For real sandbox checks, set `MOCK_AFNIC=false` and log in through the app with your AFNIC username and password
-
-Authentication follows the [official AFNIC samples](gitlab-nic/code-samples-main/API/Python/afnic.py):
-
-- `username` / `password` = your extranet credentials (same as `~/.afnic-api`)
-- `client_id` = `registrars-api-client` (OAuth client, **not** your extranet login)
+- `DATABASE_URL` — PostgreSQL connection string (default matches `docker:db`)
+- `MOCK_AFNIC=true` for local UI testing without AFNIC credentials
+- `KEYCLOAK_USERNAME` / `KEYCLOAK_PASSWORD` — registrar credentials (server-side only, never exposed to clients)
 
 ## Run in development
 
@@ -60,13 +63,39 @@ npm run dev
 - Backend: `http://localhost:3001`
 - Vite proxies `/api/*` to the backend
 
+## Run with Docker
+
+Build and start the app + PostgreSQL:
+
+```bash
+docker compose up --build
+```
+
+- App: `http://localhost:3001` (API + built frontend)
+- PostgreSQL: `localhost:5432` (user/password/db: `afnic`)
+
+Useful commands:
+
+```bash
+npm run docker:up    # compose up --build
+npm run docker:down  # compose down
+npm run docker:db    # postgres only (for local npm run dev)
+```
+
+Pass AFNIC credentials via `.env` or shell when starting Docker:
+
+```bash
+MOCK_AFNIC=false KEYCLOAK_USERNAME=... KEYCLOAK_PASSWORD=... docker compose up --build
+```
+
 ## API endpoints (local backend)
 
 | Method | Route | Description |
 |--------|-------|-------------|
-| `GET` | `/api/health` | Health check and mock mode status |
-| `GET` | `/api/auth/status` | Current login session status |
-| `POST` | `/api/auth/login` | Log in with `{ "username", "password" }` and store AFNIC token server-side |
+| `GET` | `/api/health` | Health check, database status, and mock mode |
+| `GET` | `/api/auth/status` | Current client session status |
+| `POST` | `/api/auth/register` | Register a client account and create an AFNIC contact |
+| `POST` | `/api/auth/login` | Log in with `{ "email", "password" }` |
 | `POST` | `/api/auth/logout` | End the current session |
 | `POST` | `/api/domains/check` | Check domains from JSON `{ "names": ["example.fr"] }` |
 | `POST` | `/api/domains/check/csv` | Upload CSV (`multipart/form-data`, field `file`) |

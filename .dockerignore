@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+dist
+**/dist
+.git
+.env
+data
+*.log
+.DS_Store
+gitlab-nic
+api-doc.yml
+PHOENIX_API_CAPABILITIES.md
