@@ -53,15 +53,19 @@ npm install --prefix frontend
 
 ## Run in development
 
-From the project root:
+Start the backend in Docker, then the Vite frontend:
 
 ```bash
+docker compose up -d app
 npm run dev
 ```
 
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:3001`
-- Vite proxies `/api/*` to the backend
+- Frontend: `http://localhost:5173` (proxies `/api` to the backend)
+- Backend API: `http://localhost:3001` (Docker)
+
+Or use the built UI served by Docker at `http://localhost:3001`.
+
+`npm run dev:all` still starts a local Node backend, but on Windows this often fails if another PostgreSQL instance is already bound to port `5432`. Prefer Docker for the API.
 
 ## Run with Docker
 
@@ -99,6 +103,7 @@ MOCK_AFNIC=false KEYCLOAK_USERNAME=... KEYCLOAK_PASSWORD=... docker compose up -
 | `POST` | `/api/auth/logout` | End the current session |
 | `POST` | `/api/domains/check` | Check domains from JSON `{ "names": ["example.fr"] }` |
 | `POST` | `/api/domains/check/csv` | Upload CSV (`multipart/form-data`, field `file`) |
+| `POST` | `/api/domains/register` | Register an available domain for the logged-in client |
 
 ## CSV format
 

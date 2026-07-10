@@ -24,7 +24,7 @@ services:
     environment:
       PORT: 3001
       DATABASE_URL: postgres://afnic:afnic@db:5432/afnic
-      FRONTEND_ORIGIN: http://localhost:3001
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173,http://localhost:3001}
       SESSION_COOKIE_SECURE: 'false'
       MOCK_AFNIC: ${MOCK_AFNIC:-true}
       AFNIC_ENV: ${AFNIC_ENV:-sandbox}

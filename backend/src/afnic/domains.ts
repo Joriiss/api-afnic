@@ -1,4 +1,5 @@
 import { config } from '../config.js';
+import { formatFetchError } from '../utils/fetchError.js';
 import type { AfnicRuntime } from './runtime.js';
 import { getAccessTokenForEnvironment } from './tokenCache.js';
 import type { AfnicDomainCreatePayload, AfnicDomainCreateResponse } from './domainTypes.js';
@@ -25,15 +26,22 @@ export async function createDomainWithAfnic(
   }
 
   const accessToken = await getAccessTokenForEnvironment(runtime.environment);
-  const response = await fetch(`${runtime.apiBaseUrl}/v1/domains`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
+
+  let response: Response;
+
+  try {
+    response = await fetch(`${runtime.apiBaseUrl}/v1/domains`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    throw formatFetchError(error, `Impossible de joindre l'API AFNIC (${runtime.apiBaseUrl})`);
+  }
 
   if (!response.ok) {
     const text = await response.text();

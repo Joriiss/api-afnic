@@ -69,7 +69,7 @@ export default function App() {
         setAuthStatus(status);
       } catch {
         setError(
-          'Le serveur backend est inaccessible. Lancez-le avec npm run dev depuis la racine du projet.',
+          'Le serveur backend est inaccessible. Lancez-le avec `docker compose up -d app`, puis ouvrez http://localhost:5173 ou http://localhost:3001.',
         );
       } finally {
         setAuthLoading(false);

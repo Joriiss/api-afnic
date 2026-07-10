@@ -43,7 +43,10 @@ export const config = {
   ),
   autoAppendFrSuffix: process.env.AUTO_APPEND_FR_SUFFIX !== 'false',
   sessionSecret: process.env.SESSION_SECRET ?? 'dev-session-secret-change-me',
-  frontendOrigin: process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173',
+  frontendOrigins: (process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173,http://localhost:3001')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   sessionCookieSecure: process.env.SESSION_COOKIE_SECURE === 'true',
   databaseUrl:
     process.env.DATABASE_URL ?? 'postgres://afnic:afnic@localhost:5432/afnic',

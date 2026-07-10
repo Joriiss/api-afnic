@@ -11,6 +11,22 @@ const fetchOptions: RequestInit = {
   credentials: 'include',
 };
 
+async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(url, { ...fetchOptions, ...options });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'La requête a échoué';
+
+    if (/failed to fetch|fetch failed|networkerror/i.test(message)) {
+      throw new Error(
+        'Impossible de joindre le serveur. Lancez le backend avec `docker compose up -d app`, puis utilisez http://localhost:5173 (Vite) ou http://localhost:3001.',
+      );
+    }
+
+    throw error instanceof Error ? error : new Error(message);
+  }
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
   const data = await response.json();
 
@@ -23,18 +39,17 @@ async function parseJson<T>(response: Response): Promise<T> {
 }
 
 export async function fetchHealth(): Promise<HealthResponse> {
-  const response = await fetch('/api/health', fetchOptions);
+  const response = await apiFetch('/api/health');
   return parseJson<HealthResponse>(response);
 }
 
 export async function fetchAuthStatus(): Promise<AuthStatusResponse> {
-  const response = await fetch('/api/auth/status', fetchOptions);
+  const response = await apiFetch('/api/auth/status');
   return parseJson<AuthStatusResponse>(response);
 }
 
 export async function register(payload: RegisterRequest): Promise<AuthResponse> {
-  const response = await fetch('/api/auth/register', {
-    ...fetchOptions,
+  const response = await apiFetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -44,8 +59,7 @@ export async function register(payload: RegisterRequest): Promise<AuthResponse> 
 }
 
 export async function login(email: string, password: string): Promise<AuthResponse> {
-  const response = await fetch('/api/auth/login', {
-    ...fetchOptions,
+  const response = await apiFetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -55,8 +69,7 @@ export async function login(email: string, password: string): Promise<AuthRespon
 }
 
 export async function logout(): Promise<void> {
-  const response = await fetch('/api/auth/logout', {
-    ...fetchOptions,
+  const response = await apiFetch('/api/auth/logout', {
     method: 'POST',
   });
 
@@ -66,8 +79,7 @@ export async function logout(): Promise<void> {
 export async function setAfnicEnvironment(
   environment: 'sandbox' | 'production',
 ): Promise<AuthStatusResponse> {
-  const response = await fetch('/api/auth/environment', {
-    ...fetchOptions,
+  const response = await apiFetch('/api/auth/environment', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ environment }),
@@ -77,8 +89,7 @@ export async function setAfnicEnvironment(
 }
 
 export async function checkDomains(names: string[]): Promise<DomainCheckResponse> {
-  const response = await fetch('/api/domains/check', {
-    ...fetchOptions,
+  const response = await apiFetch('/api/domains/check', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ names }),
@@ -88,8 +99,7 @@ export async function checkDomains(names: string[]): Promise<DomainCheckResponse
 }
 
 export async function registerDomain(domain: string): Promise<DomainRegisterResponse> {
-  const response = await fetch('/api/domains/register', {
-    ...fetchOptions,
+  const response = await apiFetch('/api/domains/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ domain }),
@@ -102,8 +112,7 @@ export async function checkDomainsFromCsv(file: File): Promise<DomainCheckRespon
   const formData = new FormData();
   formData.append('file', file);
 
-  const response = await fetch('/api/domains/check/csv', {
-    ...fetchOptions,
+  const response = await apiFetch('/api/domains/check/csv', {
     method: 'POST',
     body: formData,
   });

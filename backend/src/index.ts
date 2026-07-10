@@ -22,7 +22,14 @@ app.set('trust proxy', 1);
 
 app.use(
   cors({
-    origin: config.frontendOrigin,
+    origin(origin, callback) {
+      if (!origin || config.frontendOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`Origin not allowed by CORS: ${origin}`));
+    },
     credentials: true,
   }),
 );
