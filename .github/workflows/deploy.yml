@@ -1,0 +1,53 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - push
+
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            APP_DIR="${{ secrets.VPS_APP_DIR }}"
+            APP_DIR="${APP_DIR:-/opt/api-afnic}"
+            cd "$APP_DIR"
+
+            if [ ! -d .git ]; then
+              echo "ERROR: $APP_DIR is not a git repository."
+              echo "On the VPS, initialize git and add remote origin first."
+              exit 1
+            fi
+
+            # Preserve server-only config (Traefik labels, secrets, etc.)
+            cp -a docker-compose.yml /tmp/api-afnic-docker-compose.yml.bak
+            if [ -f .env ]; then
+              cp -a .env /tmp/api-afnic-env.bak
+            fi
+
+            git fetch origin push
+            git checkout -B push origin/push
+            git reset --hard origin/push
+
+            # Restore preserved files
+            cp -a /tmp/api-afnic-docker-compose.yml.bak docker-compose.yml
+            if [ -f /tmp/api-afnic-env.bak ]; then
+              cp -a /tmp/api-afnic-env.bak .env
+            fi
+
+            docker compose up --build -d
+            docker compose ps
+            docker compose logs --tail=40 app
