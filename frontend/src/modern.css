@@ -290,7 +290,7 @@
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: 1.5rem;
 }
 
@@ -301,16 +301,13 @@
 [data-theme='modern'] .modern-auth-stack .login-panel,
 [data-theme='modern'] .modern-auth-stack .register-panel {
   width: 100%;
-  max-width: 560px;
-}
-
-[data-theme='modern'] .modern-auth-stack .register-panel {
-  max-width: 720px;
+  max-width: none;
+  align-self: stretch;
 }
 
 [data-theme='modern'] .modern-auth-stack .ui-alert {
   width: 100%;
-  max-width: 720px;
+  max-width: none;
 }
 
 [data-theme='modern'] .modern-loading {
@@ -410,7 +407,6 @@
 [data-theme='modern'] .ui-button-primary:hover:not(:disabled) {
   background: var(--ui-primary-hover);
   border-color: var(--ui-primary-hover);
-  border-radius: var(--s218-radius-sm);
   color: var(--s218-white);
 }
 
@@ -648,13 +644,21 @@
 [data-theme='modern'] .field {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 0.4rem;
   font-size: 0.875rem;
 }
 
 [data-theme='modern'] .field span {
+  display: block;
+  width: 100%;
   font-weight: 600;
   color: var(--ui-accent);
+  text-align: left;
+}
+
+[data-theme='modern'] .register-grid .field {
+  grid-template-columns: unset;
 }
 
 [data-theme='modern'] .field input,

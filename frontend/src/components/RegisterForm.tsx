@@ -69,24 +69,38 @@ export function RegisterForm({
   }
 
   return (
-    <Panel title="Inscription" icon="document" className="register-panel">
+    <Panel
+      title={theme === 'win98' ? 'Inscription' : 'Créer un compte'}
+      icon="document"
+      className="register-panel"
+    >
       <div className="panel-header">
-        <h2>Créer un compte</h2>
-        <fieldset className="win98-fieldset">
-          <legend>{theme === 'win98' ? 'Informations obligatoires' : 'Vos coordonnées'}</legend>
-          <p>
-            {theme === 'win98'
-              ? 'Vos informations seront enregistrées comme contact AFNIC pour pouvoir vérifier et enregistrer des domaines.'
-              : 'Ces informations sont nécessaires pour réserver un nom de domaine à votre nom.'}
-          </p>
-          {mockMode && (
-            <p className="login-hint">
-              {theme === 'win98'
-                ? "Mode simulation : aucun contact réel n'est créé chez AFNIC."
-                : 'Mode démonstration : aucun domaine réel ne sera réservé.'}
+        {theme === 'win98' && <h2>Créer un compte</h2>}
+        {theme === 'win98' ? (
+          <fieldset className="win98-fieldset">
+            <legend>Informations obligatoires</legend>
+            <p>
+              Vos informations seront enregistrées comme contact AFNIC pour pouvoir vérifier et
+              enregistrer des domaines.
             </p>
-          )}
-        </fieldset>
+            {mockMode && (
+              <p className="login-hint">
+                Mode simulation : aucun contact réel n&apos;est créé chez AFNIC.
+              </p>
+            )}
+          </fieldset>
+        ) : (
+          <>
+            <p>
+              Ces informations sont nécessaires pour réserver un nom de domaine à votre nom.
+            </p>
+            {mockMode && (
+              <p className="login-hint">
+                Mode démonstration : aucun domaine réel ne sera réservé.
+              </p>
+            )}
+          </>
+        )}
       </div>
 
       <form className="register-form" onSubmit={(event) => void handleSubmit(event)}>
@@ -126,7 +140,15 @@ export function RegisterForm({
           </label>
 
           <label className="field">
-            <span>{form.contactKind === 'physical' ? 'Nom :' : 'Nom du contact :'}</span>
+            <span>
+              {theme === 'win98'
+                ? form.contactKind === 'physical'
+                  ? 'Nom :'
+                  : 'Nom du contact :'
+                : form.contactKind === 'physical'
+                  ? 'Nom'
+                  : 'Nom du contact'}
+            </span>
             <input
               type="text"
               value={form.contactName}
@@ -137,7 +159,7 @@ export function RegisterForm({
 
           {form.contactKind === 'physical' ? (
             <label className="field">
-              <span>Prénom :</span>
+              <span>{theme === 'win98' ? 'Prénom :' : 'Prénom'}</span>
               <input
                 type="text"
                 value={form.firstName}
@@ -148,7 +170,7 @@ export function RegisterForm({
           ) : (
             <>
               <label className="field">
-                <span>Organisation :</span>
+                <span>{theme === 'win98' ? 'Organisation :' : 'Organisation'}</span>
                 <input
                   type="text"
                   value={form.organizationName}
@@ -158,7 +180,7 @@ export function RegisterForm({
               </label>
 
               <label className="field">
-                <span>Statut juridique :</span>
+                <span>{theme === 'win98' ? 'Statut juridique :' : 'Statut juridique'}</span>
                 <select
                   value={form.legalStatus}
                   onChange={(event) => updateField('legalStatus', event.target.value as MoralLegalStatus)}
@@ -171,7 +193,7 @@ export function RegisterForm({
               </label>
 
               <label className="field">
-                <span>SIREN / SIRET :</span>
+                <span>{theme === 'win98' ? 'SIREN / SIRET :' : 'SIREN / SIRET'}</span>
                 <input
                   type="text"
                   value={form.sirenSiret}
@@ -183,7 +205,7 @@ export function RegisterForm({
           )}
 
           <label className="field">
-            <span>Téléphone :</span>
+            <span>{theme === 'win98' ? 'Téléphone :' : 'Téléphone'}</span>
             <input
               type="tel"
               value={form.phone}
@@ -194,7 +216,7 @@ export function RegisterForm({
           </label>
 
           <label className="field field-span-2">
-            <span>Adresse :</span>
+            <span>{theme === 'win98' ? 'Adresse :' : 'Adresse'}</span>
             <input
               type="text"
               value={form.firstStreet}
@@ -204,7 +226,7 @@ export function RegisterForm({
           </label>
 
           <label className="field">
-            <span>Ville :</span>
+            <span>{theme === 'win98' ? 'Ville :' : 'Ville'}</span>
             <input
               type="text"
               value={form.cityName}
@@ -214,7 +236,7 @@ export function RegisterForm({
           </label>
 
           <label className="field">
-            <span>Code postal :</span>
+            <span>{theme === 'win98' ? 'Code postal :' : 'Code postal'}</span>
             <input
               type="text"
               value={form.postalCode}
@@ -224,7 +246,7 @@ export function RegisterForm({
           </label>
 
           <label className="field">
-            <span>Pays :</span>
+            <span>{theme === 'win98' ? 'Pays :' : 'Pays'}</span>
             <input
               type="text"
               value={form.countryCode}

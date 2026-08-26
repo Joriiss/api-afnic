@@ -24,22 +24,29 @@ export function LoginForm({ onLogin, onSwitchToRegister, loading, error, mockMod
   return (
     <Panel title="Connexion" icon="key" className="login-panel">
       <div className="panel-header">
-        <h2>Connexion</h2>
-        <fieldset className="win98-fieldset">
-          <legend>{theme === 'win98' ? 'Accès client' : 'Connexion'}</legend>
-          <p>
-            {theme === 'win98'
-              ? 'Connectez-vous pour vérifier la disponibilité des domaines `.fr`.'
-              : 'Connectez-vous pour rechercher et réserver vos noms de domaine.'}
-          </p>
-          {mockMode && (
-            <p className="login-hint">
-              {theme === 'win98'
-                ? "Mode simulation : l'inscription crée un contact fictif et les vérifications sont simulées."
-                : 'Mode démonstration : les résultats sont fictifs et aucun domaine réel ne sera réservé.'}
-            </p>
-          )}
-        </fieldset>
+        {theme === 'win98' && <h2>Connexion</h2>}
+        {theme === 'win98' ? (
+          <fieldset className="win98-fieldset">
+            <legend>Accès client</legend>
+            <p>Connectez-vous pour vérifier la disponibilité des domaines `.fr`.</p>
+            {mockMode && (
+              <p className="login-hint">
+                Mode simulation : l&apos;inscription crée un contact fictif et les vérifications sont
+                simulées.
+              </p>
+            )}
+          </fieldset>
+        ) : (
+          <>
+            <p>Connectez-vous pour rechercher et réserver vos noms de domaine.</p>
+            {mockMode && (
+              <p className="login-hint">
+                Mode démonstration : les résultats sont fictifs et aucun domaine réel ne sera
+                réservé.
+              </p>
+            )}
+          </>
+        )}
       </div>
 
       <form className="login-form" onSubmit={(event) => void handleSubmit(event)}>
