@@ -9,6 +9,7 @@ import { config } from './config.js';
 import { runMigrations } from './db/migrate.js';
 import { pool } from './db/pool.js';
 import { authRouter } from './routes/auth.js';
+import { adminRouter } from './routes/admin.js';
 import { domainsRouter } from './routes/domains.js';
 import { healthRouter } from './routes/health.js';
 
@@ -55,6 +56,7 @@ app.use(
 
 app.use('/api/health', healthRouter);
 app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 app.use('/api/domains', domainsRouter);
 
 if (existsSync(frontendDist)) {

@@ -10,10 +10,17 @@ import {
 } from '../auth/session.js';
 import { config } from '../config.js';
 import { resolveAfnicEnvironment } from '../config/environments.js';
-import { registerContactWithAfnic } from '../services/contactService.js';
+import { registerContactWithAfnic, syncContactProfileWithAfnic } from '../services/contactService.js';
 import { hashPassword, verifyPassword } from '../users/password.js';
-import { createUser, findUserByEmail, findUserById, syncAdminStatus, toPublicProfile } from '../users/store.js';
-import { validateRegisterInput } from '../users/validation.js';
+import {
+  createUser,
+  findUserByEmail,
+  findUserById,
+  syncAdminStatus,
+  toPublicProfile,
+  updateUserProfile,
+} from '../users/store.js';
+import { validateRegisterInput, validateUpdateProfileInput } from '../users/validation.js';
 
 function buildAuthPayload(req: Parameters<typeof getSessionUser>[0], user = getSessionUser(req)) {
   const runtime = user ? getAfnicRuntimeForRequest(req) : resolveAfnicRuntime(config.afnicEnvironment);
@@ -47,6 +54,63 @@ authRouter.get('/status', async (req, res) => {
   }
 
   res.json(buildAuthPayload(req));
+});
+
+authRouter.get('/profile', requireAuth, async (req, res) => {
+  try {
+    const sessionUser = getSessionUser(req);
+
+    if (!sessionUser) {
+      res.status(401).json({ error: 'Connexion requise' });
+      return;
+    }
+
+    const user = await findUserById(sessionUser.userId);
+
+    if (!user) {
+      res.status(404).json({ error: 'Utilisateur introuvable' });
+      return;
+    }
+
+    res.json({ user: toPublicProfile(user) });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Impossible de charger le profil';
+    res.status(500).json({ error: message });
+  }
+});
+
+authRouter.patch('/profile', requireAuth, async (req, res) => {
+  try {
+    const sessionUser = getSessionUser(req);
+
+    if (!sessionUser) {
+      res.status(401).json({ error: 'Connexion requise' });
+      return;
+    }
+
+    const existing = await findUserById(sessionUser.userId);
+
+    if (!existing) {
+      res.status(404).json({ error: 'Utilisateur introuvable' });
+      return;
+    }
+
+    const input = validateUpdateProfileInput(req.body, existing.contactKind);
+    const runtime = getAfnicRuntimeForRequest(req);
+
+    await syncContactProfileWithAfnic(existing, input, runtime);
+    const updated = await updateUserProfile(existing.id, input, existing.contactKind);
+
+    req.session.user = buildSessionUser(updated, sessionUser.afnicEnvironment);
+
+    res.json({
+      ...buildAuthPayload(req, req.session.user),
+      user: toPublicProfile(updated),
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Impossible de mettre à jour le profil';
+    res.status(400).json({ error: message });
+  }
 });
 
 authRouter.post('/register', async (req, res) => {

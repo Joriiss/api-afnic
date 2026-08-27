@@ -55,10 +55,13 @@ export interface HealthResponse {
 }
 
 export type {
+  AdminUserItem,
+  AdminUsersResponse,
   AuthResponse,
   AuthStatusResponse,
   ContactKind,
   MoralLegalStatus,
   RegisterRequest,
+  UpdateProfileRequest,
   UserProfile,
 } from './types/auth';

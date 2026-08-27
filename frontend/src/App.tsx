@@ -12,6 +12,8 @@ import {
 } from './api/client';
 import { DomainSearchBar } from './components/DomainSearchBar';
 import { MyDomainsPage } from './components/MyDomainsPage';
+import { AdminUsersPage } from './components/AdminUsersPage';
+import { ProfilePage } from './components/ProfilePage';
 import { SettingsPage } from './components/SettingsPage';
 import { UserAccountMenu, type AppView } from './components/UserAccountMenu';
 import { Win98AppNav } from './components/Win98AppNav';
@@ -245,6 +247,12 @@ export default function App() {
   }, [authStatus?.isAdmin, setCanUseRetro]);
 
   useEffect(() => {
+    if (!authStatus?.isAdmin && (appView === 'settings' || appView === 'users')) {
+      setAppView('search');
+    }
+  }, [authStatus?.isAdmin, appView]);
+
+  useEffect(() => {
     async function loadInitialState() {
       try {
         const [health, status] = await Promise.all([fetchHealth(), fetchAuthStatus()]);
@@ -459,6 +467,14 @@ export default function App() {
       );
     }
 
+    if (appView === 'profile') {
+      return <ProfilePage onProfileUpdated={applyAuthResponse} />;
+    }
+
+    if (appView === 'users') {
+      return <AdminUsersPage currentUserEmail={authStatus?.email} />;
+    }
+
     if (appView === 'settings') {
       return (
         <SettingsPage
@@ -486,20 +502,32 @@ export default function App() {
   const win98HeroTitle =
     appView === 'domains'
       ? 'Mes domaines'
-      : appView === 'settings'
-        ? 'Paramètres administrateur'
-        : 'Vérification de disponibilité';
+      : appView === 'profile'
+        ? 'Mon profil'
+        : appView === 'users'
+          ? 'Utilisateurs'
+          : appView === 'settings'
+            ? 'Paramètres administrateur'
+            : 'Vérification de disponibilité';
 
   const win98HeroCopy =
     appView === 'domains'
       ? 'Consultez les domaines enregistrés sur votre compte.'
-      : appView === 'settings'
-        ? 'Configuration réservée aux administrateurs.'
-        : "Vérifiez si des noms de domaine `.fr` sont disponibles à l'enregistrement via l'API AFNIC Phoenix.";
+      : appView === 'profile'
+        ? 'Mettez à jour vos informations de contact.'
+        : appView === 'users'
+          ? 'Gérez les comptes clients et les droits administrateur.'
+          : appView === 'settings'
+            ? 'Configuration réservée aux administrateurs.'
+            : "Vérifiez si des noms de domaine `.fr` sont disponibles à l'enregistrement via l'API AFNIC Phoenix.";
 
   const win98MainContent =
     appView === 'domains' ? (
       <MyDomainsPage refreshKey={domainsRefreshKey} onSearchDomains={() => setAppView('search')} />
+    ) : appView === 'profile' ? (
+      <ProfilePage onProfileUpdated={applyAuthResponse} />
+    ) : appView === 'users' ? (
+      <AdminUsersPage currentUserEmail={authStatus?.email} />
     ) : appView === 'settings' ? (
       <SettingsPage
         mockMode={mockMode}

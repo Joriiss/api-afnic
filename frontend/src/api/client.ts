@@ -1,4 +1,6 @@
 import type {
+  AdminUserItem,
+  AdminUsersResponse,
   AuthResponse,
   AuthStatusResponse,
   DomainCheckResponse,
@@ -6,6 +8,8 @@ import type {
   DomainRegistrationsResponse,
   HealthResponse,
   RegisterRequest,
+  UpdateProfileRequest,
+  UserProfile,
 } from '../types';
 
 const fetchOptions: RequestInit = {
@@ -29,10 +33,33 @@ async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
 }
 
 async function parseJson<T>(response: Response): Promise<T> {
-  const data = await response.json();
+  const contentType = response.headers.get('content-type') ?? '';
+  const text = await response.text();
+
+  if (!contentType.includes('application/json')) {
+    throw new Error(
+      response.ok
+        ? 'Réponse invalide du serveur (JSON attendu).'
+        : `Le serveur a renvoyé une erreur (${response.status}). Redémarrez le backend si la route est récente.`,
+    );
+  }
+
+  let data: unknown;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error('Réponse invalide du serveur (JSON attendu).');
+  }
 
   if (!response.ok) {
-    const message = typeof data?.error === 'string' ? data.error : 'La requête a échoué';
+    const message =
+      typeof data === 'object' &&
+      data !== null &&
+      'error' in data &&
+      typeof (data as { error: unknown }).error === 'string'
+        ? (data as { error: string }).error
+        : 'La requête a échoué';
     throw new Error(message);
   }
 
@@ -47,6 +74,22 @@ export async function fetchHealth(): Promise<HealthResponse> {
 export async function fetchAuthStatus(): Promise<AuthStatusResponse> {
   const response = await apiFetch('/api/auth/status');
   return parseJson<AuthStatusResponse>(response);
+}
+
+export async function fetchProfile(): Promise<UserProfile> {
+  const response = await apiFetch('/api/auth/profile');
+  const data = await parseJson<{ user: UserProfile }>(response);
+  return data.user;
+}
+
+export async function updateProfile(payload: UpdateProfileRequest): Promise<AuthResponse> {
+  const response = await apiFetch('/api/auth/profile', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return parseJson<AuthResponse>(response);
 }
 
 export async function register(payload: RegisterRequest): Promise<AuthResponse> {
@@ -112,6 +155,37 @@ export async function registerDomain(domain: string): Promise<DomainRegisterResp
 export async function fetchMyDomainRegistrations(): Promise<DomainRegistrationsResponse> {
   const response = await apiFetch('/api/domains/registrations');
   return parseJson<DomainRegistrationsResponse>(response);
+}
+
+export async function fetchAdminUsers(): Promise<AdminUsersResponse> {
+  const response = await apiFetch('/api/admin/users');
+  return parseJson<AdminUsersResponse>(response);
+}
+
+export async function setAdminUserPrivilege(
+  userId: string,
+  isAdmin: boolean,
+): Promise<AdminUserItem> {
+  const response = await apiFetch(`/api/admin/users/${userId}/admin`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isAdmin }),
+  });
+
+  const data = await parseJson<{ user: AdminUserItem }>(response);
+  return data.user;
+}
+
+export async function deleteAdminUser(userId: string): Promise<void> {
+  const response = await apiFetch(`/api/admin/users/${userId}`, {
+    method: 'DELETE',
+  });
+
+  if (response.status === 204) {
+    return;
+  }
+
+  await parseJson(response);
 }
 
 export async function checkDomainsFromCsv(file: File): Promise<DomainCheckResponse> {

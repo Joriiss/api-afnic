@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import logoFondBlanc from '../../assets/logo-fond-blanc.webp';
 import { Badge } from '../ui/Badge';
 import { UserAccountMenu, type AppView } from '../UserAccountMenu';
 
@@ -33,9 +34,9 @@ export function ModernHeader({
           className="modern-brand modern-brand-button"
           onClick={() => onNavigate?.('search')}
           disabled={!onNavigate}
+          aria-label={`${title} — ${subtitle}`}
         >
-          <p className="modern-brand-title">{title}</p>
-          <p className="modern-brand-subtitle">{subtitle}</p>
+          <img src={logoFondBlanc} alt={title} className="modern-brand-logo" />
         </button>
 
         {showAuthActions && (

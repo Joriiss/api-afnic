@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { isAdminEmail } from '../auth/admin.js';
 import { pool } from '../db/pool.js';
-import type { PublicUserProfile, RegisterUserInput, StoredUser } from './types.js';
+import type { PublicUserProfile, RegisterUserInput, StoredUser, UpdateProfileInput, ContactKind } from './types.js';
 
 interface UserRow {
   id: string;
@@ -63,23 +63,79 @@ export function toPublicProfile(user: StoredUser): PublicUserProfile {
     contactName: user.contactName,
     firstName: user.firstName,
     organizationName: user.organizationName,
+    legalStatus: user.legalStatus,
+    sirenSiret: user.sirenSiret,
+    phone: user.phone,
+    contactEmail: user.contactEmail,
+    address: user.address,
     createdAt: user.createdAt,
   };
 }
 
 export async function syncAdminStatus(user: StoredUser): Promise<StoredUser> {
-  const shouldBeAdmin = isAdminEmail(user.email);
-
-  if (shouldBeAdmin === user.isAdmin) {
+  // ADMIN_EMAILS can only grant admin, never revoke DB privileges set in the UI.
+  if (!isAdminEmail(user.email) || user.isAdmin) {
     return user;
   }
 
   const result = await pool.query<UserRow>(
-    'UPDATE users SET is_admin = $1 WHERE id = $2 RETURNING *',
-    [shouldBeAdmin, user.id],
+    'UPDATE users SET is_admin = TRUE WHERE id = $1 RETURNING *',
+    [user.id],
   );
 
   return mapRow(result.rows[0]);
+}
+
+export async function listUsers(): Promise<StoredUser[]> {
+  const result = await pool.query<UserRow>(
+    'SELECT * FROM users ORDER BY created_at DESC',
+  );
+
+  return result.rows.map(mapRow);
+}
+
+export async function countAdmins(): Promise<number> {
+  const result = await pool.query<{ count: string }>(
+    'SELECT COUNT(*)::text AS count FROM users WHERE is_admin = TRUE',
+  );
+
+  return Number.parseInt(result.rows[0]?.count ?? '0', 10);
+}
+
+export async function setUserAdmin(userId: string, isAdmin: boolean): Promise<StoredUser> {
+  const result = await pool.query<UserRow>(
+    'UPDATE users SET is_admin = $1 WHERE id = $2 RETURNING *',
+    [isAdmin, userId],
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    throw new Error('Utilisateur introuvable');
+  }
+
+  return mapRow(row);
+}
+
+export async function deleteUserById(userId: string): Promise<void> {
+  const client = await pool.connect();
+
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM domain_registrations WHERE user_id = $1', [userId]);
+    const result = await client.query('DELETE FROM users WHERE id = $1', [userId]);
+
+    if (result.rowCount === 0) {
+      throw new Error('Utilisateur introuvable');
+    }
+
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function findUserByEmail(email: string): Promise<StoredUser | null> {
@@ -149,4 +205,53 @@ export async function createUser(
 
     throw error;
   }
+}
+
+export async function updateUserProfile(
+  userId: string,
+  input: UpdateProfileInput,
+  contactKind: ContactKind,
+): Promise<StoredUser> {
+  const result = await pool.query<UserRow>(
+    `UPDATE users SET
+      contact_name = $1,
+      first_name = $2,
+      organization_name = $3,
+      legal_status = $4,
+      siren_siret = $5,
+      phone = $6,
+      contact_email = $7,
+      address_first_street = $8,
+      address_second_street = $9,
+      address_complementary_street = $10,
+      address_city_name = $11,
+      address_postal_code = $12,
+      address_country_code = $13
+    WHERE id = $14
+    RETURNING *`,
+    [
+      input.contactName.trim(),
+      contactKind === 'physical' ? (input.firstName?.trim() ?? null) : null,
+      contactKind === 'moral' ? (input.organizationName?.trim() ?? null) : null,
+      contactKind === 'moral' ? (input.legalStatus ?? null) : null,
+      contactKind === 'moral' ? (input.sirenSiret?.trim() ?? null) : null,
+      input.phone.trim(),
+      input.contactEmail.trim().toLowerCase(),
+      input.address.firstStreet.trim(),
+      input.address.secondStreet?.trim() ?? null,
+      input.address.complementaryStreet?.trim() ?? null,
+      input.address.cityName.trim(),
+      input.address.postalCode.trim(),
+      input.address.countryCode.trim().toUpperCase(),
+      userId,
+    ],
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    throw new Error('Utilisateur introuvable');
+  }
+
+  return mapRow(row);
 }

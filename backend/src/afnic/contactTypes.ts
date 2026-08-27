@@ -36,3 +36,26 @@ export interface AfnicContactCreateResponse {
   clientId?: string;
   creationDate?: string;
 }
+
+export interface AfnicContactUpdatePayload {
+  clientId: string;
+  email?: string;
+  telephoneNumber?: string;
+  localizedPostalInfo?: {
+    contactName: string;
+    organizationName?: string;
+    postalAddress: {
+      firstStreet: string;
+      secondStreet?: string;
+      complementaryStreet?: string;
+      cityName: string;
+      postalCode?: string;
+      countryCode: string;
+    };
+  };
+}
+
+export interface AfnicContactUpdateResponse {
+  clientId?: string;
+  updateDate?: string;
+}

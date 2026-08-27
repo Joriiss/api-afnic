@@ -24,14 +24,30 @@ export function Win98AppNav({ currentView, isAdmin, onNavigate }: Win98AppNavPro
       >
         Mes domaines
       </Button>
+      <Button
+        type="button"
+        variant={currentView === 'profile' ? 'primary' : 'default'}
+        onClick={() => onNavigate('profile')}
+      >
+        Mon profil
+      </Button>
       {isAdmin && (
-        <Button
-          type="button"
-          variant={currentView === 'settings' ? 'primary' : 'default'}
-          onClick={() => onNavigate('settings')}
-        >
-          Paramètres
-        </Button>
+        <>
+          <Button
+            type="button"
+            variant={currentView === 'users' ? 'primary' : 'default'}
+            onClick={() => onNavigate('users')}
+          >
+            Utilisateurs
+          </Button>
+          <Button
+            type="button"
+            variant={currentView === 'settings' ? 'primary' : 'default'}
+            onClick={() => onNavigate('settings')}
+          >
+            Paramètres
+          </Button>
+        </>
       )}
     </nav>
   );

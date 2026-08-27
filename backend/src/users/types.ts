@@ -57,5 +57,35 @@ export interface PublicUserProfile {
   contactName: string;
   firstName?: string;
   organizationName?: string;
+  legalStatus?: MoralLegalStatus;
+  sirenSiret?: string;
+  phone: string;
+  contactEmail: string;
+  address: {
+    firstStreet: string;
+    secondStreet?: string;
+    complementaryStreet?: string;
+    cityName: string;
+    postalCode: string;
+    countryCode: string;
+  };
   createdAt: string;
+}
+
+export interface UpdateProfileInput {
+  contactName: string;
+  firstName?: string;
+  organizationName?: string;
+  legalStatus?: MoralLegalStatus;
+  sirenSiret?: string;
+  phone: string;
+  contactEmail: string;
+  address: {
+    firstStreet: string;
+    secondStreet?: string;
+    complementaryStreet?: string;
+    cityName: string;
+    postalCode: string;
+    countryCode: string;
+  };
 }

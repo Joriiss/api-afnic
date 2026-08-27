@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from './ui/Button';
 
-export type AppView = 'search' | 'domains' | 'settings';
+export type AppView = 'search' | 'domains' | 'profile' | 'settings' | 'users';
 
 interface UserAccountMenuProps {
   userLabel: string;
@@ -112,15 +112,33 @@ export function UserAccountMenu({
       >
         Mes domaines
       </button>
+      <button
+        type="button"
+        role="menuitem"
+        className={`user-account-item${currentView === 'profile' ? ' is-active' : ''}`}
+        onClick={() => navigate('profile')}
+      >
+        Mon profil
+      </button>
       {isAdmin && (
-        <button
-          type="button"
-          role="menuitem"
-          className={`user-account-item${currentView === 'settings' ? ' is-active' : ''}`}
-          onClick={() => navigate('settings')}
-        >
-          Paramètres
-        </button>
+        <>
+          <button
+            type="button"
+            role="menuitem"
+            className={`user-account-item${currentView === 'users' ? ' is-active' : ''}`}
+            onClick={() => navigate('users')}
+          >
+            Utilisateurs
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className={`user-account-item${currentView === 'settings' ? ' is-active' : ''}`}
+            onClick={() => navigate('settings')}
+          >
+            Paramètres
+          </button>
+        </>
       )}
       <div className="user-account-divider" role="separator" />
       <button type="button" role="menuitem" className="user-account-item" onClick={handleLogout}>

@@ -82,8 +82,7 @@
 
 [data-theme='modern'] .modern-brand {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  align-items: center;
 }
 
 [data-theme='modern'] .modern-brand-button {
@@ -98,23 +97,16 @@
   cursor: default;
 }
 
-[data-theme='modern'] .modern-brand-button:not(:disabled):hover .modern-brand-title {
-  color: var(--ui-primary);
+[data-theme='modern'] .modern-brand-button:not(:disabled):hover {
+  opacity: 0.88;
 }
 
-[data-theme='modern'] .modern-brand-title {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--ui-fg);
-  letter-spacing: -0.01em;
-}
-
-[data-theme='modern'] .modern-brand-subtitle {
-  margin: 0;
-  font-size: 0.8125rem;
-  font-weight: 400;
-  color: var(--ui-muted);
+[data-theme='modern'] .modern-brand-logo {
+  display: block;
+  height: 2.5rem;
+  width: auto;
+  max-width: min(220px, 55vw);
+  object-fit: contain;
 }
 
 [data-theme='modern'] .modern-header-actions {
@@ -1003,4 +995,15 @@
   [data-theme='modern'] .domain-search-submit {
     width: 100%;
   }
+}
+
+[data-theme='modern'] .admin-users-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+[data-theme='modern'] .admin-users-protected {
+  margin-left: 0.5rem;
+  vertical-align: middle;
 }

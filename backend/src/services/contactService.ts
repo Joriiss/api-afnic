@@ -1,8 +1,8 @@
-import type { AfnicContactCreatePayload } from '../afnic/contactTypes.js';
-import { createContactWithAfnic } from '../afnic/contacts.js';
-import { resolveAfnicRuntime } from '../afnic/runtime.js';
+import type { AfnicContactCreatePayload, AfnicContactUpdatePayload } from '../afnic/contactTypes.js';
+import { createContactWithAfnic, updateContactWithAfnic } from '../afnic/contacts.js';
+import { resolveAfnicRuntime, type AfnicRuntime } from '../afnic/runtime.js';
 import { config } from '../config.js';
-import type { RegisterUserInput } from '../users/types.js';
+import type { RegisterUserInput, StoredUser, UpdateProfileInput } from '../users/types.js';
 
 function formatPhoneNumber(phone: string): string {
   const digits = phone.replace(/\D/g, '');
@@ -74,6 +74,40 @@ export function buildAfnicContactPayload(input: RegisterUserInput): AfnicContact
   return payload;
 }
 
+export function buildAfnicContactUpdatePayload(
+  clientId: string,
+  input: UpdateProfileInput,
+): AfnicContactUpdatePayload {
+  const payload: AfnicContactUpdatePayload = {
+    clientId,
+    email: input.contactEmail,
+    telephoneNumber: formatPhoneNumber(input.phone),
+    localizedPostalInfo: {
+      contactName: input.contactName,
+      postalAddress: {
+        firstStreet: input.address.firstStreet,
+        cityName: input.address.cityName,
+        postalCode: input.address.postalCode,
+        countryCode: input.address.countryCode,
+      },
+    },
+  };
+
+  if (input.address.secondStreet) {
+    payload.localizedPostalInfo!.postalAddress.secondStreet = input.address.secondStreet;
+  }
+
+  if (input.address.complementaryStreet) {
+    payload.localizedPostalInfo!.postalAddress.complementaryStreet = input.address.complementaryStreet;
+  }
+
+  if (input.organizationName) {
+    payload.localizedPostalInfo!.organizationName = input.organizationName;
+  }
+
+  return payload;
+}
+
 export async function registerContactWithAfnic(input: RegisterUserInput): Promise<string> {
   const payload = buildAfnicContactPayload(input);
   const runtime = resolveAfnicRuntime(config.afnicEnvironment);
@@ -84,4 +118,13 @@ export async function registerContactWithAfnic(input: RegisterUserInput): Promis
   }
 
   return response.clientId;
+}
+
+export async function syncContactProfileWithAfnic(
+  user: StoredUser,
+  input: UpdateProfileInput,
+  runtime: AfnicRuntime,
+): Promise<void> {
+  const payload = buildAfnicContactUpdatePayload(user.afnicClientId, input);
+  await updateContactWithAfnic(payload, runtime);
 }
